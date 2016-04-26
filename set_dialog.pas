@@ -13,8 +13,6 @@ type
     SetMapSize_LbHeight: TLabel;
     SetMapSize_Width: TSpinEdit;
     SetMapSize_Height: TSpinEdit;
-    BtnOK: TButton;
-    BtnCancel: TButton;
     ShiftMap_Menu: TPanel;
     ShiftMap_RbUp: TRadioButton;
     ShiftMap_RbDown: TRadioButton;
@@ -26,6 +24,11 @@ type
     LevelSelection_List: TListBox;
     TilesetSelection_Menu: TPanel;
     TilesetSelection_List: TListBox;
+    FileSelection_Menu: TPanel;
+    FileSelection_List: TListBox;
+    ButtonsPanel: TPanel;
+    BtnCancel: TButton;
+    BtnOK: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);  
@@ -39,6 +42,8 @@ type
   public
     { Public declarations }
     procedure init;
+    function get_file_listitem(file_index: integer): string;
+    procedure update_file_listitem(file_index: integer);
     procedure select_menu(menu: integer);
   end;
 
@@ -74,11 +79,14 @@ var
   i: integer;
 begin
   for i := 0 to Archive.level_count - 1 do
-    LevelSelection_List.Items.Add(Archive.level_info[i].name);
+    LevelSelection_List.Items.Add(Archive.level_names[i]);
   LevelSelection_List.ItemIndex := 0;
   for i := 0 to Archive.tileset_count - 1 do
-    TilesetSelection_List.Items.Add(Archive.tileset_info[i].name);
+    TilesetSelection_List.Items.Add(Archive.tileset_names[i]);
   TilesetSelection_List.ItemIndex := 0;
+  for i := 0 to Archive.file_count - 1 do
+    FileSelection_List.Items.Add(get_file_listitem(i));
+  FileSelection_List.ItemIndex := 0;
 end;
 
 procedure TSetDialog.select_menu(menu: integer);
@@ -87,10 +95,12 @@ begin
   ShiftMap_Menu.Visible := False;
   LevelSelection_Menu.Visible := False;
   TilesetSelection_Menu.Visible := False;
+  FileSelection_Menu.Visible := False;
   Show;
   current_menu := menu;
   case menu of
     1:  begin
+          Height := 160;
           Caption := 'Set map size';
           SetMapSize_Width.Value := Map.width;
           SetMapSize_Height.Value := Map.height;
@@ -98,23 +108,45 @@ begin
           //SetMapSize_Width.SetFocus;
         end;
     2:  begin
+          Height := 160;
           ShiftMap_Menu.Visible := True;
           Caption := 'Shift map';
           ShiftMap_NumTiles.SetFocus;
         end;
     3:  begin
+          Height := 200;
           LevelSelection_Menu.Visible := True;
           Caption := 'Select level';
           LevelSelection_List.SetFocus;
         end;
     4:  begin
+          Height := 200;
           TilesetSelection_Menu.Visible := True;
           Caption := 'Select Tileset';
           TilesetSelection_List.SetFocus;
         end;
+    5:  begin
+          Height := 480;
+          FileSelection_Menu.Visible := True;
+          Caption := 'Select a file';
+          FileSelection_List.SetFocus;
+        end;
   end;
   Hide;
   ShowModal;
+end;
+
+function TSetDialog.get_file_listitem(file_index: integer): string;
+begin
+  result := inttostr(file_index);
+  if Archive.file_names[file_index] <> '' then
+    result := result + ' - ' + Archive.file_names[file_index];
+  result := result + '   (' + inttostr(Archive.file_list[file_index].size) + ')';
+end;
+
+procedure TSetDialog.update_file_listitem(file_index: integer);
+begin
+  FileSelection_List.Items[file_index] := get_file_listitem(file_index);
 end;
 
 procedure TSetDialog.BtnCancelClick(Sender: TObject);
@@ -145,6 +177,9 @@ begin
           ModalResult := mrOk;
         end;
     4:  begin
+          ModalResult := mrOk;
+        end;
+    5:  begin
           ModalResult := mrOk;
         end;
   end;

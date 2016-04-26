@@ -162,6 +162,11 @@ type
     Easy1: TMenuItem;
     Moderate1: TMenuItem;
     Hard1: TMenuItem;
+    Archive1: TMenuItem;
+    Exportfile1: TMenuItem;
+    Importfile1: TMenuItem;
+    FileImportDialog: TOpenDialog;
+    FileExportDialog: TSaveDialog;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -187,6 +192,8 @@ type
     procedure Exportmap1Click(Sender: TObject);
     procedure Savemapimage1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
+    procedure Exportfile1Click(Sender: TObject);
+    procedure Importfile1Click(Sender: TObject);
     procedure Undo1Click(Sender: TObject);
     procedure Redo1Click(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
@@ -827,6 +834,38 @@ procedure TMainWindow.Exit1Click(Sender: TObject);
 begin
   MainWindow.OnResize := nil;
   application.Terminate;
+end;
+
+procedure TMainWindow.Exportfile1Click(Sender: TObject);
+var
+  file_index: integer;
+begin
+  SetDialog.select_menu(5);
+  if SetDialog.ModalResult = mrCancel then
+    exit;
+  file_index := SetDialog.FileSelection_List.ItemIndex;
+  if Archive.file_names[file_index] <> '' then
+    FileExportDialog.FileName := Archive.file_names[file_index]
+  else
+    FileExportDialog.FileName := 'file_' + inttostr(file_index) + '.bin';
+  if FileExportDialog.Execute then
+    Archive.export_file(file_index, FileExportDialog.FileName);
+end;
+
+procedure TMainWindow.Importfile1Click(Sender: TObject);
+var
+  file_index: integer;
+begin
+  SetDialog.select_menu(5);
+  if SetDialog.ModalResult = mrCancel then
+    exit;
+  file_index := SetDialog.FileSelection_List.ItemIndex;
+  if FileImportDialog.Execute then
+  begin
+    Archive.import_file(file_index, FileImportDialog.FileName);
+    SetDialog.update_file_listitem(file_index);
+    ShowMessage('File imported');
+  end;
 end;
 
 procedure TMainWindow.Undo1Click(Sender: TObject);
@@ -2209,11 +2248,12 @@ begin
   // Load map
   Map.load_map_from_archive(index);
   // Change tileset respectively
-  Tileset.change_tileset(Archive.level_info[index].tileset);
+  //TODO
+  Tileset.change_tileset(0);
   // Set status bar
-  StatusBar.Panels[4].Text := Archive.level_info[index].name;
+  StatusBar.Panels[4].Text := Archive.level_names[index];
   StatusBar.Panels[3].Text := inttostr(Map.width)+' x '+inttostr(Map.height);
-  set_window_titles(Archive.level_info[index].name);
+  set_window_titles(Archive.level_names[index]);
   LevelPropertiesDialog.update_contents;
   // Rendering
   resize_map_canvas;
@@ -2228,21 +2268,14 @@ var
 begin
   if not Map.loaded then
     exit;
-  // Check if current tileset and level tileset match
-  if Tileset.current_tileset <> Archive.level_info[index].tileset then
-  begin
-    if Application.MessageBox(PChar('The current tileset (' + Archive.tileset_info[Tileset.current_tileset].name + ') does not match with the tileset assigned to level ' + Archive.level_info[index].name + ' (' + Archive.tileset_info[Archive.level_info[index].tileset].name + ').' +
-      #13'Do you want to save the map anyway?'), 'Warning', MB_YESNO or MB_ICONWARNING) = IDNO then
-      exit;
-  end;
   // Save map
   old_index := Map.index;
   Map.save_map_to_archive(index);
   // Update map name on status bar if map index has changed
   if Map.index <> old_index then
   begin
-    StatusBar.Panels[4].Text := Archive.level_info[Map.index].name;
-    set_window_titles(Archive.level_info[Map.index].name);
+    StatusBar.Panels[4].Text := Archive.level_names[Map.index];
+    set_window_titles(Archive.level_names[Map.index]);
   end;
 end;
 

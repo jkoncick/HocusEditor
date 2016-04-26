@@ -3,7 +3,7 @@ object SetDialog: TSetDialog
   Top = 188
   BorderStyle = bsDialog
   Caption = 'SetDialog'
-  ClientHeight = 159
+  ClientHeight = 166
   ClientWidth = 176
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,8 +20,9 @@ object SetDialog: TSetDialog
   object SetMapSize_Menu: TPanel
     Left = 0
     Top = 0
-    Width = 177
-    Height = 97
+    Width = 176
+    Height = 125
+    Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object SetMapSize_LbWidth: TLabel
@@ -63,31 +64,14 @@ object SetDialog: TSetDialog
       Value = 32
     end
   end
-  object BtnOK: TButton
-    Left = 8
-    Top = 128
-    Width = 75
-    Height = 25
-    Caption = 'OK'
-    TabOrder = 1
-    OnClick = BtnOKClick
-  end
-  object BtnCancel: TButton
-    Left = 96
-    Top = 128
-    Width = 75
-    Height = 25
-    Caption = 'Cancel'
-    TabOrder = 2
-    OnClick = BtnCancelClick
-  end
   object ShiftMap_Menu: TPanel
     Left = 0
     Top = 0
-    Width = 177
-    Height = 97
+    Width = 176
+    Height = 125
+    Align = alClient
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 1
     object ShiftMap_LbNumTiles: TLabel
       Left = 16
       Top = 64
@@ -149,15 +133,16 @@ object SetDialog: TSetDialog
   object LevelSelection_Menu: TPanel
     Left = 0
     Top = 0
-    Width = 177
-    Height = 121
+    Width = 176
+    Height = 125
+    Align = alClient
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 2
     object LevelSelection_List: TListBox
       Left = 0
       Top = 0
-      Width = 177
-      Height = 121
+      Width = 176
+      Height = 125
       Align = alClient
       Columns = 4
       ItemHeight = 13
@@ -168,20 +153,67 @@ object SetDialog: TSetDialog
   object TilesetSelection_Menu: TPanel
     Left = 0
     Top = 0
-    Width = 177
-    Height = 109
+    Width = 176
+    Height = 125
+    Align = alClient
     BevelOuter = bvNone
-    TabOrder = 5
+    TabOrder = 3
     object TilesetSelection_List: TListBox
       Left = 0
       Top = 0
-      Width = 177
-      Height = 109
+      Width = 176
+      Height = 125
       Align = alClient
       Columns = 2
       ItemHeight = 13
       TabOrder = 0
       OnDblClick = BtnOKClick
+    end
+  end
+  object FileSelection_Menu: TPanel
+    Left = 0
+    Top = 0
+    Width = 176
+    Height = 125
+    Align = alClient
+    BevelOuter = bvNone
+    TabOrder = 4
+    object FileSelection_List: TListBox
+      Left = 0
+      Top = 0
+      Width = 176
+      Height = 125
+      Align = alClient
+      ItemHeight = 13
+      TabOrder = 0
+      OnDblClick = BtnOKClick
+    end
+  end
+  object ButtonsPanel: TPanel
+    Left = 0
+    Top = 125
+    Width = 176
+    Height = 41
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 5
+    object BtnCancel: TButton
+      Left = 96
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'Cancel'
+      TabOrder = 0
+      OnClick = BtnCancelClick
+    end
+    object BtnOK: TButton
+      Left = 8
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'OK'
+      TabOrder = 1
+      OnClick = BtnOKClick
     end
   end
 end

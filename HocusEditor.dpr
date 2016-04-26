@@ -11,7 +11,8 @@ uses
   _settings in '_settings.pas',
   _archive in '_archive.pas',
   level_props_dialog in 'level_props_dialog.pas' {LevelPropertiesDialog},
-  _savegame in '_savegame.pas';
+  _savegame in '_savegame.pas',
+  _exefile in '_exefile.pas';
 
 {$R *.res}
 
@@ -23,6 +24,7 @@ begin
   Tileset := TTileset.Create;
   Settings := TSettings.Create;
   Archive := TArchive.Create;
+  ExeFile := TExeFile.Create;
   Application.CreateForm(TMainWindow, MainWindow);
   Application.CreateForm(TSetDialog, SetDialog);
   Application.CreateForm(TBlockPresetDialog, BlockPresetDialog);

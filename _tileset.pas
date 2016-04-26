@@ -116,7 +116,7 @@ begin
   save_config;
   // Change to new tileset
   current_tileset := index;
-  MainWindow.StatusBar.Panels[2].Text := Archive.tileset_info[current_tileset].name;
+  MainWindow.StatusBar.Panels[2].Text := Archive.tileset_names[current_tileset];
   // Load tileset configuration if it is different
   load_config;
   // Load tileset image
@@ -162,7 +162,7 @@ begin
   FillChar(block_presets, sizeof(block_presets), 0);
   FillChar(block_preset_cnt, sizeof(block_preset_cnt), 0);
   // Try to open configuration ini file
-  filename := current_dir+'/tilesets/'+Archive.tileset_info[current_tileset].name+'.ini';
+  filename := current_dir+'/tilesets/'+Archive.tileset_names[current_tileset]+'.ini';
   tileset_config_filename := filename;
   if not FileExists(filename) then
     exit;

@@ -1016,6 +1016,19 @@ object MainWindow: TMainWindow
         OnClick = Exit1Click
       end
     end
+    object Archive1: TMenuItem
+      Caption = 'Archive'
+      object Exportfile1: TMenuItem
+        Caption = 'Export file'
+        ShortCut = 120
+        OnClick = Exportfile1Click
+      end
+      object Importfile1: TMenuItem
+        Caption = 'Import file'
+        ShortCut = 121
+        OnClick = Importfile1Click
+      end
+    end
     object Edit1: TMenuItem
       Caption = 'Edit'
       object Undo1: TMenuItem
@@ -1172,5 +1185,17 @@ object MainWindow: TMainWindow
     Filter = 'Image (*.bmp)|*.bmp'
     Title = 'Save map image'
     Left = 128
+  end
+  object FileImportDialog: TOpenDialog
+    Filter = 'All files (*.*)|*.*'
+    Title = 'Source file to import'
+    Left = 32
+    Top = 32
+  end
+  object FileExportDialog: TSaveDialog
+    Filter = 'All files (*.*)|*.*'
+    Title = 'Target filename to export'
+    Left = 64
+    Top = 32
   end
 end
