@@ -59,12 +59,24 @@ type
     seAnimLastIndex: TSpinEdit;
     pnTilesetImage: TPanel;
     imgTilesetImage: TImage;
+    imgBackdropImage: TImage;
+    lbLevelParTime: TLabel;
+    seLevelParTime: TSpinEdit;
+    lbLevelBackdrop: TLabel;
+    cbxLevelBackdrop: TComboBox;
+    lbLevelMusic: TLabel;
+    cbxLevelMusic: TComboBox;
+    lbLevelElevatorTiles: TLabel;
+    imgLevelElevatorLeft: TImage;
+    lbLevelElevatorLeft: TLabel;
+    imgLevelElevatorRight: TImage;
+    lbLevelElevatorRight: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure lstAnimationListClick(Sender: TObject);
     procedure lstMonsterListClick(Sender: TObject);
-    procedure seLevelMonsterShootDelayChange(Sender: TObject);
+    procedure LevelPropertyChange(Sender: TObject);
     procedure MonsterPropertyChange(Sender: TObject);
     procedure btnClearMonsterClick(Sender: TObject);
     procedure seAnimFirstIndexChange(Sender: TObject);
@@ -76,9 +88,12 @@ type
   private
     updating: boolean;
     editing_tile: integer;
+    last_backdrop_image: integer;
   public
     procedure update_contents;
     function get_animation_entry_title(index: integer): string;
+    procedure update_level_properties;
+    procedure update_backdrop_image;
     procedure update_animation_defined_tiles;
     procedure update_animation_entry;
     procedure update_monster_type;
@@ -102,12 +117,17 @@ var
   i: integer;
 begin
   for i := 0 to Length(Archive.monster_type_names) - 1 do
-  begin
     cbxMonsterSpriteSet.Items.Add(inttostr(i) + ' - ' + Archive.get_monster_type_name(i));
-  end;
   cbxMonsterSpriteSet.ItemIndex := 0;
+  for i := 0 to Length(Archive.tileset_names) - 1 do
+    cbxLevelBackdrop.Items.Add(inttostr(i) + ' - ' + Archive.tileset_names[i]);
+  cbxLevelBackdrop.ItemIndex := 0;
+  for i := 0 to Length(Archive.music_names) - 1 do
+    cbxLevelMusic.Items.Add(inttostr(i) + ' - ' + Archive.music_names[i]);
+  cbxLevelMusic.ItemIndex := 0;
   imgAnimAnimatedTiles.Canvas.Pixels[0,0] := 0;
   imgAnimAnimatedTiles.Width := 0;
+  last_backdrop_image := -1;
 end;
 
 procedure TLevelPropertiesDialog.FormKeyDown(Sender: TObject;
@@ -132,12 +152,20 @@ begin
   update_monster_type;
 end;
 
-procedure TLevelPropertiesDialog.seLevelMonsterShootDelayChange(Sender: TObject);
+procedure TLevelPropertiesDialog.LevelPropertyChange(Sender: TObject);
 var
   p: ^TLvlPlayerInfo;
+  e: ^TLevelExeData;
 begin
+  if updating then
+    exit;
   p := Addr(Map.leveldata.player_info);
+  e := Addr(Map.levelexedata);
   p.MonsterShootDelay := strtointdef(seLevelMonsterShootDelay.Text, 0);
+  e.par_time := strtointdef(seLevelParTime.Text, 0);
+  e.backdrop_number := cbxLevelBackdrop.ItemIndex;
+  e.music_number := cbxLevelMusic.ItemIndex;
+  update_backdrop_image;
 end;
 
 procedure TLevelPropertiesDialog.MonsterPropertyChange(Sender: TObject);
@@ -235,8 +263,8 @@ var
 begin
   if not Map.loaded then
     exit;
-  // Update player properties
-  seLevelMonsterShootDelay.Value := Map.leveldata.player_info.MonsterShootDelay;
+  // Update level properties
+  update_level_properties;
   // Update animation properties (header)
   update_animation_defined_tiles;
   // Update animation properties (entry list)
@@ -276,6 +304,42 @@ begin
     result := 'Entry ' + inttostr(index)
   else
     result := 'Entry ' + inttostr(index) + ' (' + inttostr(num_anims) + ' ' + anim_type_mark[Min(Map.leveldata.animation_info.AnimData[index].AnimType,3)] + ')';
+end;
+
+procedure TLevelPropertiesDialog.update_level_properties;
+var
+  tile: smallint;
+  tile_x, tile_y: integer;
+begin
+  updating := true;
+  seLevelMonsterShootDelay.Value := Map.leveldata.player_info.MonsterShootDelay;
+  seLevelParTime.Value := Map.levelexedata.par_time;
+  cbxLevelBackdrop.ItemIndex := Map.levelexedata.backdrop_number;
+  cbxLevelMusic.ItemIndex := Map.levelexedata.music_number;
+  tile := Map.levelexedata.elevator_tile_left;
+  tile_x := tile mod tileset_cols;
+  tile_y := tile div tileset_cols;
+  lbLevelElevatorLeft.Caption := '(' + inttostr(tile) + ')';
+  imgLevelElevatorLeft.Canvas.CopyRect(Rect(0, 0, 32, 32), Tileset.tileimage.Canvas, Rect(tile_x*16, tile_y*16, tile_x*16+16, tile_y*16+16));
+  tile := Map.levelexedata.elevator_tile_right;
+  tile_x := tile mod tileset_cols;
+  tile_y := tile div tileset_cols;
+  lbLevelElevatorRight.Caption := '(' + inttostr(tile) + ')';
+  imgLevelElevatorRight.Canvas.CopyRect(Rect(0, 0, 32, 32), Tileset.tileimage.Canvas, Rect(tile_x*16, tile_y*16, tile_x*16+16, tile_y*16+16));
+  updating := false;
+  update_backdrop_image;
+end;
+
+procedure TLevelPropertiesDialog.update_backdrop_image;
+var
+  index: integer;
+begin
+  index := Map.levelexedata.backdrop_number;
+  if index = last_backdrop_image then
+    exit;
+  last_backdrop_image := index;
+  Archive.load_palette(Archive.first_backdrop_palette_file_index + index, 1);
+  Archive.load_pcx_image(imgBackdropImage.Picture.Bitmap, Archive.first_backdrop_file_index + index);
 end;
 
 procedure TLevelPropertiesDialog.update_animation_defined_tiles;
@@ -358,15 +422,19 @@ end;
 procedure TLevelPropertiesDialog.imgTilesetImageMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   a: ^TLvlAnimationInfo;
+  b: ^TLevelExeData;
   tile_index: byte;
 begin
   a := Addr(Map.leveldata.animation_info);
+  b := Addr(Map.levelexedata);
   tile_index := (X div 16) + (Y div 16) * tileset_cols;
   case editing_tile of
     0: a.BackgroundTile := tile_index;
     1: a.SwitchDownTile := tile_index;
     2: a.SwitchUpTile := tile_index;
     3: a.ShootableTile := tile_index;
+    4: b.elevator_tile_left := tile_index;
+    5: b.elevator_tile_right := tile_index;
   end;
   pnTilesetImage.Visible := false;
   update_contents;

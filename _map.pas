@@ -187,6 +187,16 @@ const all_level_data_update_flags: TLevelDataUpdateFlags = [ufStartPos, ufMonste
 // Other type definitions
 // ============================================================================
 type
+  TLevelExeData = record
+    par_time: word;
+    tileset_number: word;
+    backdrop_number: word;
+    music_number: word;
+    elevator_tile_left: smallInt;
+    elevator_tile_right: smallInt;
+  end;
+
+type
   TSelectionBlock = record
     width: word;
     height: word;
@@ -231,6 +241,7 @@ type
     // Level variables
     level_data: TLevelData;
     level_data_update_flags: TLevelDataUpdateFlags;
+    level_exe_data: TLevelExeData;
 
     // Statistics variables
     map_stats: TMapStats;
@@ -255,6 +266,7 @@ type
     Property data: TMapData read map_data;
     Property leveldata: TLevelData read level_data;
     Property leveldata_dirtyflag: TLevelDataUpdateFlags read level_data_update_flags write level_data_update_flags;
+    Property levelexedata: TLevelExeData read level_exe_data;
     Property width: word read map_width;
     Property height: word read map_height;
     Property stats: TMapStats read map_stats;
@@ -338,7 +350,7 @@ var
 
 implementation
 
-uses Windows, Forms, SysUtils, Math, _renderer, _settings, _archive, main;
+uses Windows, Forms, SysUtils, Math, _renderer, _settings, _archive, _exefile, main;
 
 
 // Modify map tile and save old values into undo history.
@@ -1237,6 +1249,8 @@ begin
   reset_undo_history;
   compute_statistics;
   level_data_update_flags := all_level_data_update_flags;
+  // Change tileset respectively
+  Tileset.change_tileset(level_exe_data.tileset_number);
 end;
 
 procedure TMap.load_map_from_archive(index: integer);
@@ -1282,6 +1296,8 @@ begin
   Archive.load_level_data(Addr(level_data.monster_info), index, 7);
   Archive.load_level_data(Addr(level_data.monster_triggers), index, 8);
   Archive.close_archive(true);
+  // Load level data from exe
+  ExeFile.get_level_data(index, level_exe_data);
   // Fill moreinfo layer
   for x := 0 to max_map_width - 1 do
     for y := 0 to max_map_height - 1 do
@@ -1344,6 +1360,8 @@ begin
   reset_undo_history;
   compute_statistics;
   level_data_update_flags := all_level_data_update_flags;
+  // Change tileset respectively
+  Tileset.change_tileset(level_exe_data.tileset_number);
 end;
 
 procedure TMap.save_map_to_archive(index: integer);
@@ -1384,6 +1402,8 @@ begin
   Archive.save_level_data(Addr(level_data.monster_info), index, 7);
   Archive.save_level_data(Addr(level_data.monster_triggers), index, 8);
   Archive.close_archive(true);
+  // Save level data to exe
+  Exefile.save_level_data(index, level_exe_data);
   map_index := index;
 end;
 
@@ -1397,6 +1417,7 @@ begin
   FileMode := fmOpenRead;
   Reset(map_file);
   BlockRead(map_file, header, sizeof(header));
+  BlockRead(map_file, level_exe_data, sizeof(level_exe_data));
   BlockRead(map_file, level_data, sizeof(level_data));
   BlockRead(map_file, map_data, sizeof(map_data));
   CloseFile(map_file);
@@ -1408,7 +1429,8 @@ begin
   reset_undo_history;
   compute_statistics;
   level_data_update_flags := all_level_data_update_flags;
-  Tileset.change_tileset(header[3]);
+  // Change tileset respectively
+  Tileset.change_tileset(level_exe_data.tileset_number);
 end;
 
 procedure TMap.save_map_file(filename: String);
@@ -1421,8 +1443,9 @@ begin
   header[0] := ord('H');
   header[1] := ord('P');
   header[2] := ord('M');
-  header[3] := Tileset.current_tileset;
+  header[3] := 0;
   BlockWrite(map_file, header, sizeof(header));
+  BlockWrite(map_file, level_exe_data, sizeof(level_exe_data));
   BlockWrite(map_file, level_data, sizeof(level_data));
   BlockWrite(map_file, map_data, sizeof(map_data));
   CloseFile(map_file);

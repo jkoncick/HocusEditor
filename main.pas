@@ -734,7 +734,6 @@ begin
     exit;
   tileset_index := SetDialog.TilesetSelection_List.ItemIndex;
   Map.new_map(tileset_index);
-  Tileset.change_tileset(tileset_index);
   // Update status bar and title
   StatusBar.Panels[3].Text := inttostr(Map.width)+' x '+inttostr(Map.height);
   StatusBar.Panels[4].Text := 'Map not saved';
@@ -2247,9 +2246,6 @@ procedure TMainWindow.load_map_from_archive(index: integer);
 begin
   // Load map
   Map.load_map_from_archive(index);
-  // Change tileset respectively
-  //TODO
-  Tileset.change_tileset(0);
   // Set status bar
   StatusBar.Panels[4].Text := Archive.level_names[index];
   StatusBar.Panels[3].Text := inttostr(Map.width)+' x '+inttostr(Map.height);

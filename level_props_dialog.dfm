@@ -1,9 +1,9 @@
 object LevelPropertiesDialog: TLevelPropertiesDialog
-  Left = 192
-  Top = 114
+  Left = 190
+  Top = 60
   BorderStyle = bsDialog
   Caption = 'Level properties'
-  ClientHeight = 449
+  ClientHeight = 617
   ClientWidth = 633
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,31 +21,127 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     Left = 8
     Top = 8
     Width = 617
-    Height = 49
+    Height = 217
     Caption = ' Level settings '
     TabOrder = 0
     object lbLevelMonsterShootDelay: TLabel
-      Left = 16
+      Left = 8
       Top = 24
       Width = 98
       Height = 13
       Caption = 'Monster shoot delay:'
     end
+    object imgBackdropImage: TImage
+      Left = 290
+      Top = 10
+      Width = 320
+      Height = 200
+      OnMouseDown = imgTilesetImageMouseDown
+    end
+    object lbLevelParTime: TLabel
+      Left = 8
+      Top = 56
+      Width = 90
+      Height = 13
+      Caption = 'Par time (seconds):'
+    end
+    object lbLevelBackdrop: TLabel
+      Left = 8
+      Top = 88
+      Width = 80
+      Height = 13
+      Caption = 'Backdrop image:'
+    end
+    object lbLevelMusic: TLabel
+      Left = 8
+      Top = 120
+      Width = 31
+      Height = 13
+      Caption = 'Music:'
+    end
+    object lbLevelElevatorTiles: TLabel
+      Left = 8
+      Top = 160
+      Width = 63
+      Height = 13
+      Caption = 'Elevator tiles:'
+    end
+    object imgLevelElevatorLeft: TImage
+      Tag = 4
+      Left = 96
+      Top = 150
+      Width = 32
+      Height = 32
+      OnClick = imgTileClick
+    end
+    object lbLevelElevatorLeft: TLabel
+      Left = 144
+      Top = 158
+      Width = 12
+      Height = 13
+      Caption = '(0)'
+    end
+    object imgLevelElevatorRight: TImage
+      Tag = 5
+      Left = 184
+      Top = 150
+      Width = 32
+      Height = 32
+      OnClick = imgTileClick
+    end
+    object lbLevelElevatorRight: TLabel
+      Left = 232
+      Top = 158
+      Width = 12
+      Height = 13
+      Caption = '(0)'
+    end
     object seLevelMonsterShootDelay: TSpinEdit
       Left = 120
-      Top = 19
+      Top = 20
       Width = 73
       Height = 22
       MaxValue = 65535
       MinValue = 0
       TabOrder = 0
       Value = 0
-      OnChange = seLevelMonsterShootDelayChange
+      OnChange = LevelPropertyChange
+    end
+    object seLevelParTime: TSpinEdit
+      Left = 120
+      Top = 52
+      Width = 73
+      Height = 22
+      MaxValue = 65535
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+      OnChange = LevelPropertyChange
+    end
+    object cbxLevelBackdrop: TComboBox
+      Left = 120
+      Top = 84
+      Width = 145
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 2
+      OnChange = LevelPropertyChange
+    end
+    object cbxLevelMusic: TComboBox
+      Left = 120
+      Top = 116
+      Width = 145
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 3
+      OnChange = LevelPropertyChange
     end
   end
   object gbAnimationSettings: TGroupBox
     Left = 8
-    Top = 64
+    Top = 232
     Width = 617
     Height = 185
     Caption = ' Animation settings '
@@ -241,7 +337,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
   end
   object gbMonsterSettings: TGroupBox
     Left = 8
-    Top = 256
+    Top = 424
     Width = 617
     Height = 185
     Caption = ' Monster settings '
@@ -437,7 +533,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
   end
   object pnTilesetImage: TPanel
     Left = 144
-    Top = 64
+    Top = 232
     Width = 329
     Height = 209
     TabOrder = 3

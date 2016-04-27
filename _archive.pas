@@ -23,19 +23,24 @@ type
     first_level_file_index: integer;
     first_tileset_file_index: integer;
     first_backdrop_file_index: integer;
+    first_backdrop_palette_file_index: integer;
 
     // FAT variables
     file_count: integer;
     file_list: array of TFileEntry;
     file_names: array of string;
 
-    // Tileset variables
+    // Tileset names
     tileset_count: integer;
     tileset_names: array of String;
 
-    // Level variables
+    // Level names
     level_count: Integer;
     level_names: array of String;
+
+    // Music names
+    music_count: integer;
+    music_names: array of String;
 
     // Monster types
     monster_type_names: array[0..39] of string;
@@ -55,7 +60,7 @@ type
     procedure export_file(file_index: integer; filename: String);
     procedure import_file(file_index: integer; filename: String);
 
-    procedure load_palette;
+    procedure load_palette(file_index, palette_index: integer);
     procedure load_pcx_image(target: TBitmap; file_index: integer);
     procedure load_tileset_image(target: TBitmap; index: integer);
     procedure load_level_data(mem: Pointer; level_num, subfile_num: integer);
@@ -145,7 +150,7 @@ begin
   file_list := Addr(ExeFile.file_list[0]);
 
   // Load palette
-  load_palette;
+  load_palette(palette_file_index, 0);
 end;
 
 procedure TArchive.load_config(filename: string);
@@ -162,6 +167,7 @@ begin
   first_level_file_index := ini.ReadInteger('Basic', 'First_Level_File', 131);
   first_tileset_file_index := ini.ReadInteger('Basic', 'First_Tileset_File', 105);
   first_backdrop_file_index := ini.ReadInteger('Basic', 'First_Backdrop_File', 89);
+  first_backdrop_palette_file_index := ini.ReadInteger('Basic', 'First_Backdrop_Palette_File', 73);
   // Load tilesets
   ini.ReadSection('Tilesets', tmp_strings);
   tileset_count := tmp_strings.Count;
@@ -174,6 +180,12 @@ begin
   SetLength(level_names, level_count);
   for i := 0 to level_count -1 do
     level_names[i] := tmp_strings[i];
+  // Load music names
+  ini.ReadSection('Music_Names', tmp_strings);
+  music_count := tmp_strings.Count;
+  SetLength(music_names, music_count);
+  for i := 0 to music_count -1 do
+    music_names[i] := tmp_strings[i];
   // Load monster types
   ini.ReadSection('Monster_Types', tmp_strings);
   for i := 0 to tmp_strings.Count -1 do
@@ -314,14 +326,16 @@ begin
   save_data(Addr(buffer[0]), file_list[file_index].offset, size);
 end;
 
-procedure TArchive.load_palette;
+procedure TArchive.load_palette(file_index, palette_index: integer);
 var
-  tmp_palette: array[0..255, 0..2] of byte;
+  tmp_palette: array[0..127, 0..2] of byte;
   i: integer;
+  offset: integer;
 begin
-  load_data(Addr(tmp_palette), file_list[palette_file_index].offset, 768);
-  for i := 0 to 255 do
-    palette[i] := (tmp_palette[i,0] shl 2) + (tmp_palette[i,1] shl 10) + (tmp_palette[i,2] shl 18);
+  load_data(Addr(tmp_palette), file_list[file_index].offset, 384);
+  offset := palette_index * 128;
+  for i := 0 to 127 do
+    palette[i + offset] := (tmp_palette[i,0] shl 2) + (tmp_palette[i,1] shl 10) + (tmp_palette[i,2] shl 18);
 end;
 
 procedure TArchive.load_pcx_image(target: TBitmap; file_index: integer);
