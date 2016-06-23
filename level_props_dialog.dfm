@@ -73,6 +73,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
       Width = 32
       Height = 32
       OnClick = imgTileClick
+      OnMouseDown = imgLevelElevatorMouseDown
     end
     object lbLevelElevatorLeft: TLabel
       Left = 144
@@ -88,6 +89,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
       Width = 32
       Height = 32
       OnClick = imgTileClick
+      OnMouseDown = imgLevelElevatorMouseDown
     end
     object lbLevelElevatorRight: TLabel
       Left = 232

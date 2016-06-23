@@ -18,11 +18,11 @@ type
     DrawObjectBrush: boolean;
     DrawPaintBrush: boolean;
     TestMapDifficulty: integer;
+    LoadCustomImageWarn: boolean;
     DosboxParameters: String;
 
     // File paths
     GameFolder: String;
-    GameExecutable: String;
     DosboxPath: String;
 
   private
@@ -59,12 +59,12 @@ begin
   DrawObjectBrush := ini.ReadBool('Preferences', 'DrawObjectBrush', true);
   DrawPaintBrush := ini.ReadBool('Preferences', 'DrawPaintBrush', true);
   TestMapDifficulty := ini.ReadInteger('Preferences', 'TestMapDifficulty', 1);
+  LoadCustomImageWarn := ini.ReadBool('Preferences', 'LoadCustomImageWarn', true);
   DosboxParameters := ini.ReadString('Preferences','DosboxParameters', '');
   // Load file paths
   GameFolder := ini.ReadString('Paths','GameFolder', current_dir);
   if GameFolder[Length(GameFolder)] <> '\' then
     GameFolder := GameFolder + '\';
-  GameExecutable := ini.ReadString('Paths','GameExecutable', GameFolder + 'HOCUS.EXE');
   DosboxPath := ini.ReadString('Paths','DosboxPath', current_dir + '..\dosbox\dosbox.exe');
   // Load MainWindow GUI setings
   if not PreserveGUISettings then
@@ -112,10 +112,10 @@ begin
   ini.WriteBool('Preferences', 'DrawObjectBrush', DrawObjectBrush);
   ini.WriteBool('Preferences', 'DrawPaintBrush', DrawPaintBrush);
   ini.WriteInteger('Preferences', 'TestMapDifficulty', TestMapDifficulty);
+  ini.WriteBool('Preferences', 'LoadCustomImageWarn', LoadCustomImageWarn);
   ini.WriteString('Preferences','DosboxParameters',DosboxParameters);
   // Save file paths
   ini.WriteString('Paths','GameFolder',GameFolder);
-  ini.WriteString('Paths','GameExecutable',GameExecutable);
   ini.WriteString('Paths','DosboxPath',DosboxPath);
   // Save GUI settings
   ini.WriteInteger('GUI','MainWindow.Left',MainWindow.Left);

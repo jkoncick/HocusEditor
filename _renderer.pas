@@ -2,7 +2,7 @@ unit _renderer;
 
 interface
 
-uses Graphics, Types, _map;
+uses Windows, Graphics, Types, _map;
 
 type EditingMarkerType = (emBrush, emSingleObject, emSelectionArea);
 
@@ -404,6 +404,7 @@ var
   map_tile: ^TMapTile;
   tile_color: TColor;
   border_x, border_y: integer;
+  handle: HDC;
 begin
   min_x := 0;
   min_y := 0;
@@ -431,6 +432,7 @@ begin
   border_x := (max_map_width - data_width) div 2;
   border_y := (max_map_height - data_height) div 2;
   // Rendering contents
+  handle := cnv_target.Handle;
   for y:= min_y to max_y do
     for x:= min_x to max_x do
     begin
@@ -456,7 +458,7 @@ begin
         ivSpikes:  tile_color := $C0C0C0;
         ivLava:    tile_color := $006CC0;
       end;
-      cnv_target.Pixels[x+border_x,y+border_y] := tile_color;
+      SetPixel(handle, x+border_x, y+border_y, tile_color);
     end;
 end;
 

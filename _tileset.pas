@@ -77,8 +77,8 @@ type
   public
     procedure init;
     procedure change_tileset(index: integer);
-    procedure next_tileset;
-    procedure use_custom_image(filename: String);
+    procedure load_tileset_image;
+    procedure load_custom_image(filename: String);
 
     procedure load_config;
     procedure save_config;
@@ -95,7 +95,7 @@ var
 
 implementation
 
-uses Windows, Forms, SysUtils, Math, main, block_preset_dialog, _settings, IniFiles, Classes, Dialogs, _archive;
+uses Windows, Forms, SysUtils, Math, main, block_preset_dialog, _settings, IniFiles, Classes, Dialogs, _archive, _map;
 
 procedure TTileset.init;
 begin
@@ -120,27 +120,22 @@ begin
   // Load tileset configuration if it is different
   load_config;
   // Load tileset image
-  Archive.load_tileset_image(tileimage, index);
   tileimage_filename := '';
+  load_tileset_image;
+end;
+
+procedure TTileset.load_tileset_image;
+begin
+  Archive.load_palette(Archive.first_backdrop_palette_file_index + Map.levelexedata.backdrop_number, 1);
+  Archive.load_tileset_image(tileimage, current_tileset);
   MainWindow.render_tileset;
 end;
 
-
-procedure TTileset.next_tileset;
-var
-  new_tileset: integer;
-begin
-  new_tileset := current_tileset + 1;
-  if new_tileset >= Archive.tileset_count then
-    new_tileset := 0;
-  change_tileset(new_tileset);
-end;
-
-procedure TTileset.use_custom_image(filename: String);
+procedure TTileset.load_custom_image(filename: String);
 begin
   current_tileset := -1;
   MainWindow.StatusBar.Panels[2].Text := 'Custom image';
-  tileimage.LoadFromFile(tileimage_filename);
+  tileimage.LoadFromFile(filename);
   tileimage_filename := filename;
   MainWindow.render_tileset;
 end;

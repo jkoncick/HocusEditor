@@ -46,7 +46,7 @@ type
     monster_type_names: array[0..39] of string;
 
     // Palette data
-    palette: array[0..255] of TColor;
+    palette: array[0..255] of Cardinal;
 
   public
     procedure init;
@@ -68,6 +68,7 @@ type
 
     function get_monster_type_name(sprite_set: word): string;
     function get_first_level_by_tileset(tileset_index: integer): integer;
+    procedure copy_backdrop_image_palette(image_index: integer);
   end;
 
 var
@@ -335,32 +336,34 @@ begin
   load_data(Addr(tmp_palette), file_list[file_index].offset, 384);
   offset := palette_index * 128;
   for i := 0 to 127 do
-    palette[i + offset] := (tmp_palette[i,0] shl 2) + (tmp_palette[i,1] shl 10) + (tmp_palette[i,2] shl 18);
+    palette[i + offset] := (tmp_palette[i,0] shl 18) + (tmp_palette[i,1] shl 10) + (tmp_palette[i,2] shl 2);
 end;
 
 procedure TArchive.load_pcx_image(target: TBitmap; file_index: integer);
 var
   file_entry: ^TFileEntry;
-  buffer: Array[0..65535] of byte;
+  buffer: array of byte;
+  tmp_bitmap: array[0..63999] of Cardinal;
+  srcpos, targpos: Cardinal;
   b, color: byte;
-  i, j, count, x, y: Cardinal;
+  j, count: integer;
 begin
   file_entry := Addr(file_list[file_index]);
   target.PixelFormat := pf32bit;
   target.Width := 320;
   target.Height := 200;
-  load_data(Addr(buffer), file_entry.offset, file_entry.size);
-  x := 0;
-  y := 0;
-  i := $80;
-  while i < file_entry.size do
+  SetLength(buffer, file_entry.size);
+  load_data(buffer, file_entry.offset, file_entry.size);
+  targpos := 0;
+  srcpos := $80;
+  while srcpos < file_entry.size do
   begin
-    b := buffer[i];
+    b := buffer[srcpos];
     if (b and $C0) = $C0 then
     begin
       count := b and $3F;
-      Inc(i);
-      color := buffer[i];
+      Inc(srcpos);
+      color := buffer[srcpos];
     end else
     begin
       count := 1;
@@ -368,17 +371,16 @@ begin
     end;
     for j := 0 to count-1 do
     begin
-      target.Canvas.Pixels[x,y] := palette[color];
-      Inc(x);
-      if x = 320 then
+      tmp_bitmap[targpos] := palette[color];
+      Inc(targpos);
+      if targpos = 64000 then
       begin
-        x := 0;
-        inc(y);
-      end;
-      if y = 200 then
+        SetBitmapBits(target.Handle, sizeof(tmp_bitmap), Addr(tmp_bitmap));
+        target.Modified := true;
         exit;
+      end;
     end;
-    Inc(i);
+    Inc(srcpos);
   end;
 end;
 
@@ -414,9 +416,32 @@ end;
 function TArchive.get_first_level_by_tileset(tileset_index: integer): integer;
 var
   i: integer;
+  level_10_index: integer;
 begin
   result := -1;
-  // TODO
+  for i := 0 to level_count - 1 do
+  begin
+    level_10_index := i + (i div 9);
+    if ExeFile.tileset_numbers[level_10_index] = tileset_index then
+    begin
+      result := i;
+      break;
+    end;
+  end;
+end;
+
+procedure TArchive.copy_backdrop_image_palette(image_index: integer);
+var
+  file_entry: ^TFileEntry;
+  buffer: array[0..383] of byte;
+  i: integer;
+begin
+  file_entry := Addr(file_list[first_backdrop_file_index + image_index]);
+  load_data(Addr(Buffer), file_entry.offset + file_entry.size - 384, 384);
+  for i := 0 to 383 do
+    buffer[i] := buffer[i] shr 2;
+  file_entry := Addr(file_list[first_backdrop_palette_file_index + image_index]);
+  save_data(Addr(Buffer), file_entry.offset, 384);
 end;
 
 end.

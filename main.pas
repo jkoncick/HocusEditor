@@ -525,6 +525,7 @@ var
   step: integer;
 begin
   cur_shift_state := Shift;
+  mouse_already_clicked := false;
   case key of
     // Esc:
     27:
@@ -854,16 +855,60 @@ end;
 procedure TMainWindow.Importfile1Click(Sender: TObject);
 var
   file_index: integer;
+  entry_index: integer;
+  palette_changed: boolean;
 begin
   SetDialog.select_menu(5);
   if SetDialog.ModalResult = mrCancel then
     exit;
+  palette_changed := false;
   file_index := SetDialog.FileSelection_List.ItemIndex;
   if FileImportDialog.Execute then
   begin
     Archive.import_file(file_index, FileImportDialog.FileName);
     SetDialog.update_file_listitem(file_index);
     ShowMessage('File imported');
+    // If importing a backdrop image, ask for copying its upper palette
+    if (file_index >= Archive.first_backdrop_file_index) and (file_index < (Archive.first_backdrop_file_index + Archive.tileset_count)) then
+    begin
+      entry_index := file_index - Archive.first_backdrop_file_index;
+      if Application.MessageBox('You just imported a backdrop image.'#13'Do you want to copy the upper part of palette from the PCX file'#13'to the corresponding palette file in HOCUS.DAT?', 'Copy image palette', MB_YESNO or MB_ICONQUESTION) = IDYES then
+      begin
+        Archive.copy_backdrop_image_palette(entry_index);
+        ShowMessage('Palette copied.');
+        palette_changed := true;
+      end;
+      if Map.levelexedata.backdrop_number = entry_index then
+      begin
+        LevelPropertiesDialog.update_backdrop_image(true);
+        if palette_changed then
+        begin
+          Tileset.load_tileset_image;
+          render_map;
+        end;
+      end;
+    end;
+    // If importing a backdrop image palette, reload backdrop image
+    if (file_index >= Archive.first_backdrop_palette_file_index) and (file_index < (Archive.first_backdrop_palette_file_index + Archive.tileset_count)) then
+    begin
+      entry_index := file_index - Archive.first_backdrop_palette_file_index;
+      if Map.levelexedata.backdrop_number = entry_index then
+      begin
+        LevelPropertiesDialog.update_backdrop_image(true);
+        Tileset.load_tileset_image;
+        render_map;
+      end;
+    end;
+    // If importing a tileset image, reload current tileset
+    if (file_index >= Archive.first_tileset_file_index) and (file_index < (Archive.first_tileset_file_index + Archive.tileset_count)) then
+    begin
+      entry_index := file_index - Archive.first_tileset_file_index;
+      if Map.levelexedata.tileset_number = entry_index then
+      begin
+        Tileset.load_tileset_image;
+        render_map;
+      end;
+    end;
   end;
 end;
 
@@ -939,25 +984,33 @@ begin
   if SetDialog.ModalResult = mrCancel then
     exit;
   tileset_index := SetDialog.TilesetSelection_List.ItemIndex;
-  Tileset.change_tileset(tileset_index);
+  Map.change_tileset(tileset_index);
   // Re-render everything
-  render_minimap;
   render_map;
 end;
 
 procedure TMainWindow.Selectnext1Click(Sender: TObject);
+var
+  new_tileset: integer;
 begin
-  Tileset.next_tileset;
+  new_tileset := Tileset.current_tileset + 1;
+  if new_tileset >= Archive.tileset_count then
+    new_tileset := 0;
+  Map.change_tileset(new_tileset);
   // Re-render everything
-  render_minimap;
   render_map;
 end;
 
 procedure TMainWindow.Loadcustomimage1Click(Sender: TObject);
 begin
+  if Settings.LoadCustomImageWarn then
+  begin
+    Application.MessageBox('This option does NOT import the selected tileset image into game data archive (HOCUS.DAT).'#13'This option is here to quickly test your tileset image without need to import it first.'#13+'To import your custom tileset, please use "Archive - Import file" option, and provide your tileset im the game-readable PCX format.'#13#13'This message will not show again.', 'Warning', MB_OK or MB_ICONWARNING);
+    Settings.LoadCustomImageWarn := false;
+  end;
   if TilesetOpenDialog.Execute then
   begin
-    Tileset.use_custom_image(TilesetOpenDialog.FileName);
+    Tileset.load_custom_image(TilesetOpenDialog.FileName);
     // Re-render everything
     render_map;
   end;
@@ -2350,9 +2403,9 @@ begin
     Application.MessageBox('Map is not saved in the game archive.', 'Cannot test map', MB_ICONERROR);
     result := false;
   end else
-  if not FileExists(Settings.GameExecutable) then
+  if not FileExists(Settings.GameFolder + 'HOCUS.EXE') then
   begin
-    Application.MessageBox(PChar('Cannot find game executable (' + Settings.GameExecutable + ')'), 'Cannot test map', MB_ICONERROR);
+    Application.MessageBox(PChar('Cannot find game executable (' + Settings.GameFolder + 'HOCUS.EXE)'), 'Cannot test map', MB_ICONERROR);
     result := false;
   end else
   if not FileExists(Settings.DosboxPath) then
@@ -2389,7 +2442,7 @@ begin
   Seek(sav_file, 0);
   BlockWrite(sav_file, sav_file_contents, sizeof(sav_file_contents));
   // Launch game
-  ShellExecuteA(0, 'open', PChar(Settings.DosboxPath), PChar('"' + Settings.GameExecutable + '" ' + Settings.DosboxParameters), PChar(Settings.GameFolder), SW_SHOWNORMAL);
+  ShellExecuteA(0, 'open', PChar(Settings.DosboxPath), PChar('"' + Settings.GameFolder + 'HOCUS.EXE" ' + Settings.DosboxParameters), PChar(Settings.GameFolder), SW_SHOWNORMAL);
 end;
 
 function TMainWindow.mode(m: SelectedMode): boolean;

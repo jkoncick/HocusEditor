@@ -83,6 +83,8 @@ type
     procedure seAnimLastIndexChange(Sender: TObject);
     procedure rbAnimTypeClick(Sender: TObject);
     procedure imgTileClick(Sender: TObject);
+    procedure imgLevelElevatorMouseDown(Sender: TObject;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure imgTilesetImageMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   private
@@ -93,7 +95,7 @@ type
     procedure update_contents;
     function get_animation_entry_title(index: integer): string;
     procedure update_level_properties;
-    procedure update_backdrop_image;
+    procedure update_backdrop_image(force: boolean);
     procedure update_animation_defined_tiles;
     procedure update_animation_entry;
     procedure update_monster_type;
@@ -165,7 +167,7 @@ begin
   e.par_time := strtointdef(seLevelParTime.Text, 0);
   e.backdrop_number := cbxLevelBackdrop.ItemIndex;
   e.music_number := cbxLevelMusic.ItemIndex;
-  update_backdrop_image;
+  update_backdrop_image(false);
 end;
 
 procedure TLevelPropertiesDialog.MonsterPropertyChange(Sender: TObject);
@@ -189,6 +191,7 @@ begin
   m.Unknown2 := IfThen(cbMonsterUnknown2.Checked, 1, 0);
   m.Unknown3 := IfThen(cbMonsterUnknown3.Checked, 1, 0);
   m.Behavior := cbxMonsterBehavior.ItemIndex;
+  Map.leveldata_dirtyflag := Map.leveldata_dirtyflag + [ufMonsterTypes];
 end;
 
 procedure TLevelPropertiesDialog.btnClearMonsterClick(Sender: TObject);
@@ -198,7 +201,8 @@ begin
   m := Addr(Map.leveldata.monster_info[lstMonsterList.ItemIndex]);
   FillChar(m^, sizeof(m^), 0);
   m.SpriteSet := 65535;
-  lstMonsterList.Items[lstMonsterList.ItemIndex] := inttostr(lstMonsterList.ItemIndex) + ' - (unused)';
+  lstMonsterList.Items[lstMonsterList.ItemIndex] := inttostr(lstMonsterList.ItemIndex) + ' - (Unused)';
+  Map.leveldata_dirtyflag := Map.leveldata_dirtyflag + [ufMonsterTypes];
   update_monster_type;
 end;
 
@@ -253,6 +257,22 @@ procedure TLevelPropertiesDialog.imgTileClick(Sender: TObject);
 begin
   editing_tile := (Sender as TImage).Tag;
   pnTilesetImage.Visible := true;
+end;
+
+procedure TLevelPropertiesDialog.imgLevelElevatorMouseDown(
+  Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
+  Y: Integer);
+var
+  e: ^TLevelExeData;
+begin
+  if Button <> mbRight then
+    exit;
+  e := Addr(Map.levelexedata);
+  if (Sender as TImage).Tag = 4 then
+    e.elevator_tile_left := -1
+  else
+    e.elevator_tile_right := -1;
+  update_level_properties;
 end;
 
 procedure TLevelPropertiesDialog.update_contents;
@@ -317,25 +337,41 @@ begin
   cbxLevelBackdrop.ItemIndex := Map.levelexedata.backdrop_number;
   cbxLevelMusic.ItemIndex := Map.levelexedata.music_number;
   tile := Map.levelexedata.elevator_tile_left;
-  tile_x := tile mod tileset_cols;
-  tile_y := tile div tileset_cols;
   lbLevelElevatorLeft.Caption := '(' + inttostr(tile) + ')';
-  imgLevelElevatorLeft.Canvas.CopyRect(Rect(0, 0, 32, 32), Tileset.tileimage.Canvas, Rect(tile_x*16, tile_y*16, tile_x*16+16, tile_y*16+16));
+  if tile = -1 then
+  begin
+    imgLevelElevatorLeft.Canvas.Brush.Color := clWhite;
+    imgLevelElevatorLeft.Canvas.Pen.Color := clWhite;
+    imgLevelElevatorLeft.Canvas.Rectangle(0,0,32,32);
+  end else
+  begin
+    tile_x := tile mod tileset_cols;
+    tile_y := tile div tileset_cols;
+    imgLevelElevatorLeft.Canvas.CopyRect(Rect(0, 0, 32, 32), Tileset.tileimage.Canvas, Rect(tile_x*16, tile_y*16, tile_x*16+16, tile_y*16+16));
+  end;
   tile := Map.levelexedata.elevator_tile_right;
-  tile_x := tile mod tileset_cols;
-  tile_y := tile div tileset_cols;
   lbLevelElevatorRight.Caption := '(' + inttostr(tile) + ')';
-  imgLevelElevatorRight.Canvas.CopyRect(Rect(0, 0, 32, 32), Tileset.tileimage.Canvas, Rect(tile_x*16, tile_y*16, tile_x*16+16, tile_y*16+16));
+  if tile = -1 then
+  begin
+    imgLevelElevatorRight.Canvas.Brush.Color := clWhite;
+    imgLevelElevatorRight.Canvas.Pen.Color := clWhite;
+    imgLevelElevatorRight.Canvas.Rectangle(0,0,32,32);
+  end else
+  begin
+    tile_x := tile mod tileset_cols;
+    tile_y := tile div tileset_cols;
+    imgLevelElevatorRight.Canvas.CopyRect(Rect(0, 0, 32, 32), Tileset.tileimage.Canvas, Rect(tile_x*16, tile_y*16, tile_x*16+16, tile_y*16+16));
+  end;
   updating := false;
-  update_backdrop_image;
+  update_backdrop_image(false);
 end;
 
-procedure TLevelPropertiesDialog.update_backdrop_image;
+procedure TLevelPropertiesDialog.update_backdrop_image(force: boolean);
 var
   index: integer;
 begin
   index := Map.levelexedata.backdrop_number;
-  if index = last_backdrop_image then
+  if (index = last_backdrop_image) and not force then
     exit;
   last_backdrop_image := index;
   Archive.load_palette(Archive.first_backdrop_palette_file_index + index, 1);

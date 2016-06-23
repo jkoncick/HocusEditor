@@ -330,6 +330,7 @@ type
     // Miscellaneous procedures
     procedure compute_statistics;
     function check_errors: String;
+    procedure change_tileset(tileset_index: integer);
 
     // Load & Save procedures
     procedure new_map(tileset_index: integer);
@@ -1196,6 +1197,12 @@ begin
   result := '';
 end;
 
+procedure TMap.change_tileset(tileset_index: integer);
+begin
+  level_exe_data.tileset_number := tileset_index;
+  Tileset.change_tileset(tileset_index);
+end;
+
 procedure TMap.new_map(tileset_index: integer);
 var
   x, y: integer;
@@ -1210,7 +1217,7 @@ begin
       map_data[x,y] := empty_tile;
   // Initialize level data
   FillChar(level_data, sizeof(level_data), 0);
-  level_data.player_info.MonsterShootDelay := 45; 
+  level_data.player_info.MonsterShootDelay := 45;
   for i := 0 to Length(level_data.monster_triggers) - 1 do
     for j := 0 to Length(level_data.monster_triggers[i].Types) - 1 do
       level_data.monster_triggers[i].Types[j] := 65535;
@@ -1242,7 +1249,9 @@ begin
   begin
     Archive.load_level_data(Addr(level_data.animation_info), level_index, 1);
     Archive.load_level_data(Addr(level_data.monster_info), level_index, 7);
+    ExeFile.get_level_data(level_index, level_exe_data);
   end;
+  level_exe_data.par_time := 120;
   // Finalize it
   map_loaded := true;
   map_index := -1;
@@ -1250,7 +1259,7 @@ begin
   compute_statistics;
   level_data_update_flags := all_level_data_update_flags;
   // Change tileset respectively
-  Tileset.change_tileset(level_exe_data.tileset_number);
+  change_tileset(tileset_index);
 end;
 
 procedure TMap.load_map_from_archive(index: integer);

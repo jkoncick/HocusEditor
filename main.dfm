@@ -1060,7 +1060,7 @@ object MainWindow: TMainWindow
     object ileset1: TMenuItem
       Caption = 'Tileset'
       object Selecttileset1: TMenuItem
-        Caption = 'Select tileset...'
+        Caption = 'Change tileset...'
         OnClick = Selecttileset1Click
       end
       object Selectnext1: TMenuItem
