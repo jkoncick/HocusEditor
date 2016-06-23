@@ -1008,6 +1008,13 @@ object MainWindow: TMainWindow
         Caption = 'Save map image'
         OnClick = Savemapimage1Click
       end
+      object N9: TMenuItem
+        Caption = '-'
+      end
+      object Applymodpatch1: TMenuItem
+        Caption = 'Apply mod patch'
+        OnClick = Applymodpatch1Click
+      end
       object N2: TMenuItem
         Caption = '-'
       end
@@ -1196,6 +1203,13 @@ object MainWindow: TMainWindow
     Filter = 'All files (*.*)|*.*'
     Title = 'Target filename to export'
     Left = 64
+    Top = 32
+  end
+  object ModPatchDialog: TOpenDialog
+    DefaultExt = 'ini'
+    Filter = 'Mod patch definition (*.ini)|*.ini'
+    Title = 'Apply mod patch'
+    Left = 96
     Top = 32
   end
 end

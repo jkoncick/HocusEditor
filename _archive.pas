@@ -2,7 +2,7 @@ unit _archive;
 
 interface
 
-uses Forms, Windows, Graphics, _exefile;
+uses Forms, Windows, Dialogs, Graphics, _exefile;
 
 type
   TArchive = class
@@ -69,6 +69,7 @@ type
     function get_monster_type_name(sprite_set: word): string;
     function get_first_level_by_tileset(tileset_index: integer): integer;
     procedure copy_backdrop_image_palette(image_index: integer);
+    procedure apply_mod_patch(filename: String);
   end;
 
 var
@@ -78,7 +79,7 @@ implementation
 
 { TArchive }
 
-uses SysUtils, Classes, IniFiles, _settings, main;
+uses SysUtils, Classes, IniFiles, _settings, _map, main;
 
 procedure TArchive.init;
 var
@@ -442,6 +443,74 @@ begin
     buffer[i] := buffer[i] shr 2;
   file_entry := Addr(file_list[first_backdrop_palette_file_index + image_index]);
   save_data(Addr(Buffer), file_entry.offset, 384);
+end;
+
+procedure TArchive.apply_mod_patch(filename: String);
+var
+  ini: TMemIniFile;
+  tmp_strings: TStringList;
+  i, j, index: integer;
+  mod_patch_path, patch_file: string;
+  key, value: string;
+begin
+  mod_patch_path := ExtractFilePath(filename);
+  ini := TMemIniFile.Create(filename);
+  tmp_strings := TStringList.Create;
+  // Patch levels
+  ini.ReadSection('Levels', tmp_strings);
+  for i := 0 to tmp_strings.Count - 1 do
+  begin
+    key := tmp_strings[i];
+    value := ini.ReadString('Levels', key, '');
+    patch_file := mod_patch_path + value;
+    if not FileExists(patch_file) then
+    begin
+      Application.MessageBox(PChar('The file "' + value + '" specified as a replacement for level ' + key + ' cannot be found in the mod patch folder. Skipping.'), 'File not exists', MB_ICONWARNING or MB_OK);
+      continue;
+    end;
+    index := -1;
+    for j := 0 to level_count - 1 do
+      if key = level_names[j] then
+      begin
+        index := j;
+        break;
+      end;
+    if index = -1 then
+    begin
+      Application.MessageBox(PChar('The level "' + key + '" does not exist in the game. It is possible you use the wrong version of game. Skipping.'), 'Error', MB_ICONWARNING or MB_OK);
+      continue;
+    end;
+    // Import level and save it into game archive
+    Map.load_map_file(patch_file);
+    Map.save_map_to_archive(index);
+  end;
+  // Patch files
+  ini.ReadSection('Files', tmp_strings);
+  for i := 0 to tmp_strings.Count - 1 do
+  begin
+    key := tmp_strings[i];
+    value := ini.ReadString('Files', key, '');
+    patch_file := mod_patch_path + value;
+    if not FileExists(patch_file) then
+    begin
+      Application.MessageBox(PChar('The file "' + value + '" specified as a replacement for file ' + key + ' cannot be found in the mod patch folder. Skipping.'), 'File not exists', MB_ICONWARNING or MB_OK);
+      continue;
+    end;
+    index := -1;
+    for j := 0 to file_count - 1 do
+      if key = file_names[j] then
+      begin
+        index := j;
+        break;
+      end;
+    if index = -1 then
+    begin
+      Application.MessageBox(PChar('The file "' + key + '" does not exist in the game archive. It is possible you use the wrong version of game. Skipping.'), 'Error', MB_ICONWARNING or MB_OK);
+      continue;
+    end;
+    // Import file into game archive
+    import_file(index, patch_file);
+  end;
 end;
 
 end.

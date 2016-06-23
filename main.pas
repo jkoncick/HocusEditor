@@ -167,6 +167,9 @@ type
     Importfile1: TMenuItem;
     FileImportDialog: TOpenDialog;
     FileExportDialog: TSaveDialog;
+    N9: TMenuItem;
+    Applymodpatch1: TMenuItem;
+    ModPatchDialog: TOpenDialog;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -191,6 +194,7 @@ type
     procedure Savemapas1Click(Sender: TObject);
     procedure Exportmap1Click(Sender: TObject);
     procedure Savemapimage1Click(Sender: TObject);
+    procedure Applymodpatch1Click(Sender: TObject);    
     procedure Exit1Click(Sender: TObject);
     procedure Exportfile1Click(Sender: TObject);
     procedure Importfile1Click(Sender: TObject);
@@ -827,6 +831,20 @@ begin
       false);
     tmp_bitmap.SaveToFile(MapImageSaveDialog.FileName);
     tmp_bitmap.Destroy;
+  end;
+end;
+
+procedure TMainWindow.Applymodpatch1Click(Sender: TObject);
+begin
+  if ModPatchDialog.Execute then
+  begin
+    if Application.MessageBox('You are about to apply a mod patch to your game.'#13'Remember to backup your game files (HOCUS.EXE and HOCUS.DAT).'#13#13'Continue?', 'Apply mod patch', MB_ICONQUESTION or MB_YESNO) = IDNO then
+      exit;
+    Archive.apply_mod_patch(ModPatchDialog.FileName);
+    Application.MessageBox('Mod patch was applied.', 'Apply mod patch', MB_ICONINFORMATION or MB_OK);
+    // Restart the application because it ends in inconsistent state after importing levels
+    Close;
+    ShellExecute(Handle, nil, PChar(Application.ExeName), nil, nil, SW_SHOWNORMAL);
   end;
 end;
 
