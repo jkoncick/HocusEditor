@@ -165,11 +165,11 @@ begin
   ini := TMemIniFile.Create(filename);
   tmp_strings := TStringList.Create;
   // Load basic information
-  palette_file_index := ini.ReadInteger('Basic', 'Palette_File', 7);
-  first_level_file_index := ini.ReadInteger('Basic', 'First_Level_File', 131);
-  first_tileset_file_index := ini.ReadInteger('Basic', 'First_Tileset_File', 105);
-  first_backdrop_file_index := ini.ReadInteger('Basic', 'First_Backdrop_File', 89);
-  first_backdrop_palette_file_index := ini.ReadInteger('Basic', 'First_Backdrop_Palette_File', 73);
+  palette_file_index := ini.ReadInteger('File_Positions', 'Palette_File', 7);
+  first_level_file_index := ini.ReadInteger('File_Positions', 'First_Level_File', 131);
+  first_tileset_file_index := ini.ReadInteger('File_Positions', 'First_Tileset_File', 105);
+  first_backdrop_file_index := ini.ReadInteger('File_Positions', 'First_Backdrop_File', 89);
+  first_backdrop_palette_file_index := ini.ReadInteger('File_Positions', 'First_Backdrop_Palette_File', 73);
   // Load tilesets
   ini.ReadSection('Tilesets', tmp_strings);
   tileset_count := tmp_strings.Count;
@@ -202,8 +202,8 @@ begin
   file_count := ExeFile.file_count;
 
   // Load file names
-  SetLength(file_names, file_count);
   ini.ReadSection('File_Names', tmp_strings);
+  SetLength(file_names, file_count);
   for i := 0 to tmp_strings.Count -1 do
   begin
     num := strtoint(tmp_strings[i]);
@@ -211,6 +211,12 @@ begin
       continue;
     file_names[num] := ini.ReadString('File_Names', tmp_strings[i], '');
   end;
+  //ini.EraseSection('File_Names');
+  //for i := 0 to tmp_strings.Count -1 do
+  //begin
+  //  ini.WriteString('File_Names', inttostr(i), file_names[i]);
+  //end;
+  //ini.UpdateFile;
 
   // Free memory
   ini.Destroy;

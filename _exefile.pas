@@ -16,10 +16,17 @@ type
     // Exe file variables
     exe_filename: String;
 
+    // Configuration variables
+    fat_offset: Cardinal;
+    par_times_offset: Cardinal;
+    tileset_numbers_offset: Cardinal;
+    backdrop_numbers_offset: Cardinal;
+    music_numbers_offset: Cardinal;
+    elevator_tiles_offset: Cardinal;
   public
+
     // FAT variables
     file_count: integer;
-    fat_offset: Cardinal;
     file_list: array of TFileEntry;
 
     // Level data variables
@@ -49,7 +56,12 @@ uses SysUtils;
 procedure TExeFile.load_config(ini: TMemIniFile);
 begin
   file_count := ini.ReadInteger('Basic', 'Number_Of_Files', 652);
-  fat_offset := ini.ReadInteger('Basic', 'FAT_Exe_Offset', $1F1A4);
+  fat_offset := ini.ReadInteger('Exe_File', 'FAT_Offset', $1F1A4);
+  par_times_offset := ini.ReadInteger('Exe_File', 'Par_Times_Offset', $20A9A);
+  tileset_numbers_offset := ini.ReadInteger('Exe_File', 'Tileset_Numbers_Offset', $21ADA);
+  backdrop_numbers_offset := ini.ReadInteger('Exe_File', 'Backdrop_Numbers_Offset', $21B7A);
+  music_numbers_offset := ini.ReadInteger('Exe_File', 'Music_Numbers_Offset', $21BDE);
+  elevator_tiles_offset := ini.ReadInteger('Exe_File', 'Elevator_Tiles_Offset', $21C26);
 end;
 
 procedure TExeFile.load_data(filename: String);
@@ -63,15 +75,15 @@ begin
   Reset(f);
   Seek(f, fat_offset);
   BlockRead(f, file_list[0], file_count * sizeof(TFileEntry));
-  Seek(f, $20A9A);
+  Seek(f, par_times_offset);
   BlockRead(f, par_times, sizeof(par_times));
-  Seek(f, $21ADA);
+  Seek(f, tileset_numbers_offset);
   BlockRead(f, tileset_numbers, sizeof(tileset_numbers));
-  Seek(f, $21B7A);
+  Seek(f, backdrop_numbers_offset);
   BlockRead(f, backdrop_numbers, sizeof(backdrop_numbers));
-  Seek(f, $21BDE);
+  Seek(f, music_numbers_offset);
   BlockRead(f, music_numbers, sizeof(music_numbers));
-  Seek(f, $21C26);
+  Seek(f, elevator_tiles_offset);
   BlockRead(f, elevator_tiles, sizeof(elevator_tiles));
   Close(f);
 end;
@@ -117,15 +129,15 @@ begin
   AssignFile(f, exe_filename);
   FileMode := fmOpenReadWrite;
   Reset(f);
-  Seek(f, $20A9A);
+  Seek(f, par_times_offset);
   BlockWrite(f, par_times, sizeof(par_times));
-  Seek(f, $21ADA);
+  Seek(f, tileset_numbers_offset);
   BlockWrite(f, tileset_numbers, sizeof(tileset_numbers));
-  Seek(f, $21B7A);
+  Seek(f, backdrop_numbers_offset);
   BlockWrite(f, backdrop_numbers, sizeof(backdrop_numbers));
-  Seek(f, $21BDE);
+  Seek(f, music_numbers_offset);
   BlockWrite(f, music_numbers, sizeof(music_numbers));
-  Seek(f, $21C26);
+  Seek(f, elevator_tiles_offset);
   BlockWrite(f, elevator_tiles, sizeof(elevator_tiles));
   Close(f);
 end;
