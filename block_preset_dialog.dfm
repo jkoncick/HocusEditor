@@ -14,6 +14,7 @@ object BlockPresetDialog: TBlockPresetDialog
   FormStyle = fsStayOnTop
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnHide = FormHide
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96

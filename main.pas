@@ -531,13 +531,11 @@ begin
   cur_shift_state := Shift;
   mouse_already_clicked := false;
   case key of
-    // Esc:
-    27:
+    27: // Esc:
     begin
-
+      rbTileMode.Checked := true;
     end;
-    // Space: open tileset window
-    32:
+    32: // Space: open tileset window
     begin
       if mode(mTileLayer) then
       begin
@@ -554,11 +552,19 @@ begin
     begin
       Map.adjust_objects_in_block(1, Addr(cur_block));
       draw_cursor_image;
+      draw_block_image;
     end;
     109: // Num-
     begin
       Map.adjust_objects_in_block(-1, Addr(cur_block));
       draw_cursor_image;
+      draw_block_image;
+    end;
+    192: // ` (key under ESC)
+    begin
+      tbBrushWidth.Position := 1;
+      tbBrushHeight.Position := 1;
+      render_editing_marker;
     end;
   end;
   // Shift + arrows = same as Num keys
@@ -674,10 +680,10 @@ begin
   begin
     case key of
       // Rotate pattern
-      98:  {Num2} Map.rotate_pattern(drDown);
-      100: {Num4} Map.rotate_pattern(drLeft);
-      102: {Num6} Map.rotate_pattern(drRight);
-      104: {Num8} Map.rotate_pattern(drUp);
+      98:  {Num2} begin Map.rotate_pattern(drDown); btnSavePreset.Visible := true; end;
+      100: {Num4} begin Map.rotate_pattern(drLeft); btnSavePreset.Visible := true; end;
+      102: {Num6} begin Map.rotate_pattern(drRight); btnSavePreset.Visible := true; end;
+      104: {Num8} begin Map.rotate_pattern(drUp); btnSavePreset.Visible := true; end;
       else
         exit;
     end;
@@ -1267,13 +1273,11 @@ begin
       cur_selected_preset[bpgPatternPreset, cur_preset_layer] := -1;
       draw_block_image;
     end else
-    // Cancel current block
+    // Select single tile and switch to tile mode
     if mode(mBlockMode) then
     begin
-      cur_block.width := 0;
-      cur_block.height := 0;
-      draw_block_image;
-      render_editing_marker;
+      rbTileMode.Checked := true;
+      MapCanvasMouseDown(Sender, Button, Shift, X, Y);
     end;
     // Copy object
     if mode(mObject) then
@@ -1658,10 +1662,15 @@ var
   tmp_preset: TBlockPreset;
   x, y: integer;
 begin
-  preset_index := -1;
+  BlockPresetDialog.select_preset_to_save;
+  if BlockPresetDialog.ModalResult <> mrOk then
+    exit;
+  preset_index := BlockPresetDialog.preset_to_save;
+  if preset_index = -1 then
+    exit;
   if mode(mPatternMode) then
   begin
-    preset_index := Tileset.add_preset(Addr(Map.pattern), bpgPatternPreset, cur_preset_layer);
+    Tileset.save_preset(Addr(Map.pattern), bpgPatternPreset, cur_preset_layer, preset_index);
     cur_selected_preset[bpgPatternPreset, cur_preset_layer] := preset_index;
   end else
   if mode(mBlockMode) then
@@ -1671,17 +1680,11 @@ begin
     for x := 0 to tmp_preset.width - 1 do
       for y := 0 to tmp_preset.height - 1 do
         tmp_preset.tiles[x, y] := cur_block.data[x, y].layers[cur_preset_layer];
-    preset_index := Tileset.add_preset(Addr(tmp_preset), bpgBlockPreset, cur_preset_layer);
+    Tileset.save_preset(Addr(tmp_preset), bpgBlockPreset, cur_preset_layer, preset_index);
     cur_selected_preset[bpgBlockPreset, cur_preset_layer] := preset_index;
   end;
-  if preset_index = -1 then
-  begin
-    Application.MessageBox('Maximum number of presets was reached.', 'Error', MB_ICONERROR);
-  end else
-  begin
-    BlockPresetDialog.update_presets(cur_preset_group, cur_preset_layer);
-    btnSavePreset.Visible := false;
-  end;
+  BlockPresetDialog.update_presets(cur_preset_group, cur_preset_layer);
+  btnSavePreset.Visible := false;
 end;
 
 procedure TMainWindow.ObjectTypePagesChange(Sender: TObject);
@@ -2428,7 +2431,7 @@ begin
   end else
   if not FileExists(Settings.DosboxPath) then
   begin
-    Application.MessageBox(PChar('Cannot find Dosbox. Please specify full path to Dosbox in HocusEditor.ini file.'), 'Cannot test map', MB_ICONERROR);
+    Application.MessageBox(PChar('Cannot find Dosbox. Please specify full path to Dosbox in HocusEditor.ini file.'#13#13'(Note: Close the program first. HocusEditor.ini file is overwritten each time the program is closed.)'), 'Cannot test map', MB_ICONERROR);
     result := false;
   end else
   if Settings.CheckMapErrorsOnTest then

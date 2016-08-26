@@ -131,7 +131,7 @@ object MainWindow: TMainWindow
       Top = 80
       Width = 45
       Height = 22
-      Hint = 'Background layer'
+      Hint = 'Background layer (Ctrl+B)'
       AllowAllUp = True
       GroupIndex = 1
       Down = True
@@ -145,7 +145,7 @@ object MainWindow: TMainWindow
       Top = 80
       Width = 45
       Height = 22
-      Hint = 'Foreground layer'
+      Hint = 'Foreground layer (Ctrl+F)'
       AllowAllUp = True
       GroupIndex = 2
       Down = True
@@ -159,7 +159,7 @@ object MainWindow: TMainWindow
       Top = 80
       Width = 45
       Height = 22
-      Hint = 'Hidden layer'
+      Hint = 'Hidden layer (Ctrl+H)'
       AllowAllUp = True
       GroupIndex = 3
       Down = True
@@ -173,7 +173,7 @@ object MainWindow: TMainWindow
       Top = 80
       Width = 45
       Height = 22
-      Hint = 'Object layer'
+      Hint = 'Object layer (Ctrl+J)'
       AllowAllUp = True
       GroupIndex = 4
       Down = True
@@ -187,7 +187,7 @@ object MainWindow: TMainWindow
       Top = 80
       Width = 45
       Height = 22
-      Hint = 'Show markers'
+      Hint = 'Show markers (Ctrl+M)'
       AllowAllUp = True
       GroupIndex = 5
       Down = True
@@ -201,7 +201,7 @@ object MainWindow: TMainWindow
       Top = 80
       Width = 45
       Height = 22
-      Hint = 'Show grid'
+      Hint = 'Show grid (Ctrl+G)'
       AllowAllUp = True
       GroupIndex = 6
       Caption = 'Grid'

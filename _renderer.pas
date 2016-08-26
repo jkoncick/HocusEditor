@@ -58,6 +58,7 @@ procedure TRenderer.init;
 begin
   // Init backup image
   bkup_bitmap := TBitmap.Create;
+  bkup_bitmap.PixelFormat := pf32bit;
   bkup_bitmap.Width := 128;
   bkup_bitmap.Height := 128;
 end;

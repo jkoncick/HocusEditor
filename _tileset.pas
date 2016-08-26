@@ -72,7 +72,6 @@ type
     item_tiles: array[0..cnt_item_tiles-1] of byte;
 
     block_presets: array[0..1, 0..1, 0..max_block_presets-1] of TBlockPreset;
-    block_preset_cnt: array[0..1, 0..1] of integer;
 
   public
     procedure init;
@@ -83,7 +82,7 @@ type
     procedure load_config;
     procedure save_config;
 
-    function add_preset(preset: TBlockPresetPtr; group, layer: integer): integer;
+    procedure save_preset(preset: TBlockPresetPtr; group, layer, preset_num: integer);
     procedure remove_preset(group, layer, preset_num: integer);
 
     function block_key_to_index(key: word): integer;
@@ -146,7 +145,7 @@ var
   ini: TMemIniFile;
   tmp_strings: TStringList;
   decoder, decoder2: TStringList;
-  i, j, preset_type, preset_layer: integer;
+  i, j, preset_type, preset_layer, preset_index: integer;
   preset: ^TBlockPreset;
   width, height: integer;
 begin
@@ -155,7 +154,6 @@ begin
   FillChar(edge_tiles, sizeof(edge_tiles), 0);
   FillChar(item_tiles, sizeof(item_tiles), 0);
   FillChar(block_presets, sizeof(block_presets), 0);
-  FillChar(block_preset_cnt, sizeof(block_preset_cnt), 0);
   // Try to open configuration ini file
   filename := current_dir+'/tilesets/'+Archive.tileset_names[current_tileset]+'.ini';
   tileset_config_filename := filename;
@@ -202,9 +200,11 @@ begin
     for preset_layer := 0 to 1 do
     begin
       ini.ReadSection(block_preset_ini_sections[preset_type, preset_layer], tmp_strings);
-      block_preset_cnt[preset_type, preset_layer] := Min(tmp_strings.Count, max_block_presets);
-      for i := 0 to block_preset_cnt[preset_type, preset_layer] - 1 do
+      for i := 0 to tmp_strings.Count - 1 do
       begin
+        preset_index := strtointdef(tmp_strings[i], 0) - 1;
+        if (preset_index < 0) or (preset_index >= max_block_presets) then
+          continue;
         decoder2.DelimitedText := ini.ReadString(block_preset_ini_sections[preset_type, preset_layer], tmp_strings[i], '');
         if decoder2.Count < 2 then
           continue;
@@ -212,7 +212,7 @@ begin
         height := strtoint(decoder2[1]);
         if (width > max_block_preset_size) or (height > max_block_preset_size) then
           continue;
-        preset := Addr(block_presets[preset_type, preset_layer, i]);
+        preset := Addr(block_presets[preset_type, preset_layer, preset_index]);
         preset.width := width;
         preset.height := height;
         for j := 2 to decoder2.Count - 1 do
@@ -249,10 +249,12 @@ begin
     for preset_layer := 0 to 1 do
     begin
       ini.EraseSection(block_preset_ini_sections[preset_type, preset_layer]);
-      for i := 0 to block_preset_cnt[preset_type, preset_layer] - 1 do
+      for i := 0 to max_block_presets - 1 do
       begin
         encoder2.Clear;
         preset := Addr(block_presets[preset_type, preset_layer, i]);
+        if preset.width = 0 then
+          continue;
         encoder2.Add(inttostr(preset.width));
         encoder2.Add(inttostr(preset.height));
         for k := 0 to preset.height - 1 do
@@ -269,27 +271,15 @@ begin
   encoder2.Destroy;
 end;
 
-function TTileset.add_preset(preset: TBlockPresetPtr; group, layer: integer): integer;
+procedure TTileset.save_preset(preset: TBlockPresetPtr; group, layer, preset_num: integer);
 begin
-  if block_preset_cnt[group, layer] = max_block_presets then
-  begin
-    result := -1;
-    exit;
-  end;
-  block_presets[group, layer, block_preset_cnt[group, layer]] := preset^;
-  result := block_preset_cnt[group, layer];
-  Inc(block_preset_cnt[group, layer]);
+  block_presets[group, layer, preset_num] := preset^;
   config_changed := true;
 end;
 
 procedure TTileset.remove_preset(group, layer, preset_num: integer);
-var
-  i: integer;
 begin
-  for i := preset_num to max_block_presets - 2 do
-    block_presets[group, layer, i] := block_presets[group, layer, i+1];
-  block_presets[group, layer, max_block_presets-1] := empty_block_preset;
-  Dec(block_preset_cnt[group, layer]);
+  block_presets[group, layer, preset_num] := empty_block_preset;
   config_changed := true;
 end;
 
