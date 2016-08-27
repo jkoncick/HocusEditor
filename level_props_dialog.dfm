@@ -492,7 +492,8 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
         '7: (unused)'
         '8: Stand still (Dragon)'
         '9: (unused)'
-        '10: (unused)')
+        '10: (unused)'
+        '99: Trolodon')
     end
     object seMonsterProjectileOffset: TSpinEdit
       Left = 288

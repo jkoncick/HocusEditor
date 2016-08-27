@@ -1075,11 +1075,11 @@ end;
 procedure TMainWindow.KeyShortcuts1Click(Sender: TObject);
 begin
   Application.MessageBox(
-              'Space = Open preset window'#13'Shift + Space = Pattern presets'#13'Ctrl + Space = Block presets'#13'Arrows = Scroll map'#13'F1 - F4 = Select layer'#13'Tab = Toggle background/foreground layer'#13'Num +/- = Change object numbers in selected block'#13#13+
+              'Space = Open preset window'#13'Shift + Space = Pattern presets'#13'Ctrl + Space = Block presets'#13'Arrows = Scroll map'#13'F1 - F4 = Select layer'#13'Tab = Toggle background/foreground layer'#13'Num +/- = Change object group in selected block'#13#13+
               'Num 2/4/6/8 or Shift + Arrows:'#13'Tile mode: Change selected tile'#13'Pattern mode: Rotate pattern'#13'Block mode: Move block'#13#13+
               'Shift + 1 - 8 = Change brush size'#13'Shift + E = Tile mode'#13'Shift + D = Pattern mode'#13'Shift + C = Block mode'#13'Shift + A = All layers mode'#13'Shift + S = Save pattern/block as preset'#13#13+
               'Ctrl + A = Toggle foreground and hidden layer'#13'Ctrl + B/F/H/J = Toggle specific layer'#13'Ctrl + M = Show markers'#13'Ctrl + G = Show grid'#13#13+
-              '0 - 9, A - Z = Select block/pattern preset',
+              '0 - 9, A - Z = Quick-select preset',
               'Key Shortcuts',
               MB_OK or MB_ICONINFORMATION
               );
@@ -1088,8 +1088,8 @@ end;
 procedure TMainWindow.Mouseactions1Click(Sender: TObject);
 begin
   Application.MessageBox(
-              'Tile mode:'#13'Left = Paint tile'#13'Right = Erase tile'#13'Middle = Copy tile'#13'Double click = Fill area ("Bucket")'#13'Shift + click = Auto-place window edge'#13'Ctrl + Select (Left) = Fill selected area'#13'Ctrl + Select (Right) = Erase selected area'#13#13+
-              'Pattern mode:'#13'Left = Paint pattern'#13'Right = Erase tile'#13'Middle = Copy single tile'#13'Double click = Fill area ("Bucket")'#13'Ctrl + Select = Fill selected area'#13'Shift + Select = Copy pattern from map'#13#13+
+              'Tile mode:'#13'Left = Paint tile'#13'Right = Erase tile'#13'Middle = Copy tile'#13'Double click = Flood-fill area'#13'Shift + click = Auto-place window edge'#13'Ctrl + Select (Left) = Fill selected area'#13'Ctrl + Select (Right) = Erase selected area'#13#13+
+              'Pattern mode:'#13'Left = Paint pattern'#13'Right = Erase tile'#13'Middle = Copy single tile'#13'Double click = Flood-fill area'#13'Ctrl + Select = Fill selected area'#13'Shift + Select = Copy pattern from map'#13#13+
               'Block mode:'#13'Left = Place block'#13'Right + Move = Scroll map'#13'Middle = Select empty block'#13'Shift + Select = Copy block from map'#13#13+
               'Object mode:'#13'Left = Place object'#13'Right = Erase object'#13'Middle = Copy object'#13#13+
               'Preset selection window:'#13'Left = Select preset'#13'Right = Delete preset'#13'Middle = Show/hide keys'#13#13+

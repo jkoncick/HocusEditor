@@ -190,7 +190,7 @@ begin
   m.WobblyProjectiles := IfThen(cbMonsterWobblyProjectiles.Checked, 1, 0);
   m.Unknown2 := IfThen(cbMonsterUnknown2.Checked, 1, 0);
   m.Unknown3 := IfThen(cbMonsterUnknown3.Checked, 1, 0);
-  m.Behavior := cbxMonsterBehavior.ItemIndex;
+  m.Behavior := IfThen(cbxMonsterBehavior.ItemIndex < 11, cbxMonsterBehavior.ItemIndex, 99);
   Map.leveldata_dirtyflag := Map.leveldata_dirtyflag + [ufMonsterTypes];
 end;
 
@@ -446,7 +446,7 @@ begin
   seMonsterProjectileHSpeed.Value := monster_info.ProjectileHSpeed;
   seMonsterProjectileVSpeed.Value := monster_info.ProjectileVSpeed;
   seMonsterProjectileOffset.Value := monster_info.ProjectileOffset;
-  cbxMonsterBehavior.ItemIndex := monster_info.Behavior;
+  cbxMonsterBehavior.ItemIndex := IfThen(monster_info.Behavior <> 99, monster_info.Behavior, 11);
   cbMonsterTargetPlayer.Checked := monster_info.TargetPlayer = 1;
   cbMonsterShootProjectiles.Checked := monster_info.ShootProjectiles = 1;
   cbMonsterWobblyProjectiles.Checked := monster_info.WobblyProjectiles = 1;
