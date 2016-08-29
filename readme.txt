@@ -67,6 +67,9 @@ New from 1.1:
   but most importantly, you need to use specific key+mouse combinations (Ctrl, Shift)
   to achieve basic editing tasks. The editor provides built-in help which tells you
   the most of keyboard shortcuts and combinations for each editing mode.
+- On the Objects tab, select any subtab to edit a special object. You can double-click
+  on a group or object number in the list to move the view directly on that object.
+  This way you can easily navigate to any special object on a map.
 
 
 How the layers work and what is hidden layer

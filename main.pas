@@ -1102,7 +1102,7 @@ end;
 procedure TMainWindow.About1Click(Sender: TObject);
 begin
   ShowMessage('Hocus Pocus Level Editor'#13#13+
-              'Made by Hisymak'#13'Version 1.0'#13'Date: 2015-12-26'#13#13+
+              'Made by Hisymak (kozten@seznam.cz)'#13'Version 1.1'#13'Date: 2016-08-29'#13#13+
               'Game version: '+ Archive.archive_version +#13#13+
               'Special thanks to:'#13'Malvineous, Spinal, K1n9 Duk3 and MainMemory'#13'for reverse-engineering the Hocus Pocus map format'#13'and providing the information on Modding Wiki.'#13'http://www.shikadi.net/moddingwiki/Hocus_Pocus');
 end;

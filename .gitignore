@@ -61,4 +61,7 @@ __history/
 Thumbs.db
 HocusEditor.ini
 *.hpm
-
+*.mid
+*.pcx
+*.pal
+*.pdf
