@@ -24,6 +24,7 @@ type
     first_tileset_file_index: integer;
     first_backdrop_file_index: integer;
     first_backdrop_palette_file_index: integer;
+    sprite_file_index: integer;
 
     // FAT variables
     file_count: integer;
@@ -170,6 +171,7 @@ begin
   first_tileset_file_index := ini.ReadInteger('File_Positions', 'First_Tileset_File', 105);
   first_backdrop_file_index := ini.ReadInteger('File_Positions', 'First_Backdrop_File', 89);
   first_backdrop_palette_file_index := ini.ReadInteger('File_Positions', 'First_Backdrop_Palette_File', 73);
+  sprite_file_index := ini.ReadInteger('File_Positions', 'Sprite_File', 130);
   // Load tilesets
   ini.ReadSection('Tilesets', tmp_strings);
   tileset_count := tmp_strings.Count;

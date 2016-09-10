@@ -12,7 +12,9 @@ uses
   _archive in '_archive.pas',
   level_props_dialog in 'level_props_dialog.pas' {LevelPropertiesDialog},
   _savegame in '_savegame.pas',
-  _exefile in '_exefile.pas';
+  _exefile in '_exefile.pas',
+  _spritefile in '_spritefile.pas',
+  sprite_dialog in 'sprite_dialog.pas' {SpriteDialog};
 
 {$R *.res}
 
@@ -25,10 +27,12 @@ begin
   Settings := TSettings.Create;
   Archive := TArchive.Create;
   ExeFile := TExeFile.Create;
+  SpriteFile := TSpriteFile.Create;
   Application.CreateForm(TMainWindow, MainWindow);
   Application.CreateForm(TSetDialog, SetDialog);
   Application.CreateForm(TBlockPresetDialog, BlockPresetDialog);
   Application.CreateForm(TLevelPropertiesDialog, LevelPropertiesDialog);
+  Application.CreateForm(TSpriteDialog, SpriteDialog);
   // All GUI settings must be loaded after all dialogs are created.
   Settings.load_postcreate_editor_settings;
   // Initialize set_dialog

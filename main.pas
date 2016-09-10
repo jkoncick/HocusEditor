@@ -8,9 +8,9 @@ uses
   Dialogs, ExtCtrls, ComCtrls, Menus, StdCtrls, XPMan, Math, Spin, Buttons,
   ShellApi, IniFiles, Clipbrd, CheckLst,
   // Dialogs
-  set_dialog, block_preset_dialog, level_props_dialog,
+  set_dialog, block_preset_dialog, level_props_dialog, sprite_dialog,
   // Units
-  _renderer, _map, _tileset, _settings, _archive, _savegame;
+  _renderer, _map, _tileset, _settings, _archive, _savegame, _spritefile;
 
 type
   TImage = class(ExtCtrls.TImage)
@@ -170,6 +170,8 @@ type
     N9: TMenuItem;
     Applymodpatch1: TMenuItem;
     ModPatchDialog: TOpenDialog;
+    N11: TMenuItem;
+    Sprites1: TMenuItem;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -194,10 +196,11 @@ type
     procedure Savemapas1Click(Sender: TObject);
     procedure Exportmap1Click(Sender: TObject);
     procedure Savemapimage1Click(Sender: TObject);
-    procedure Applymodpatch1Click(Sender: TObject);    
+    procedure Applymodpatch1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure Exportfile1Click(Sender: TObject);
     procedure Importfile1Click(Sender: TObject);
+    procedure Sprites1Click(Sender: TObject);
     procedure Undo1Click(Sender: TObject);
     procedure Redo1Click(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
@@ -388,6 +391,8 @@ begin
   Settings.load_precreate_editor_settings;
   // Initialize archive
   Archive.init;
+  // Initialize sprite file
+  SpriteFile.load_from_archive;
   // Load and initialize graphics
   Renderer.init;
   minimap_buffer := TBitmap.Create;
@@ -934,6 +939,11 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TMainWindow.Sprites1Click(Sender: TObject);
+begin
+  SpriteDialog.Show;
 end;
 
 procedure TMainWindow.Undo1Click(Sender: TObject);

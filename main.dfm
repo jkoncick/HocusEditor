@@ -1035,6 +1035,14 @@ object MainWindow: TMainWindow
         ShortCut = 121
         OnClick = Importfile1Click
       end
+      object N11: TMenuItem
+        Caption = '-'
+      end
+      object Sprites1: TMenuItem
+        Caption = 'Sprites...'
+        ShortCut = 122
+        OnClick = Sprites1Click
+      end
     end
     object Edit1: TMenuItem
       Caption = 'Edit'
