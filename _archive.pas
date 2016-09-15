@@ -58,6 +58,7 @@ type
     procedure load_data(mem: Pointer; offset, size: Cardinal);
     procedure save_data(mem: Pointer; offset, size: Cardinal);
     procedure reserve_space_for_file(file_index: integer; size: Cardinal);
+    procedure save_file(mem: Pointer; file_index: integer; size: Cardinal);
     procedure export_file(file_index: integer; filename: String);
     procedure import_file(file_index: integer; filename: String);
 
@@ -304,6 +305,14 @@ begin
     close_archive(true);
 end;
 
+procedure TArchive.save_file(mem: Pointer; file_index: integer; size: Cardinal);
+begin
+  open_archive(fmOpenReadWrite, true);
+  reserve_space_for_file(file_index, size);
+  save_data(mem, file_list[file_index].offset, size);
+  close_archive(true);
+end;
+
 procedure TArchive.export_file(file_index: integer; filename: String);
 var
   buffer: array of byte;
@@ -328,12 +337,11 @@ begin
   AssignFile(f, filename);
   FileMode := fmOpenRead;
   Reset(f);
-  size := FileSize(f);  
+  size := FileSize(f);
   SetLength(buffer, size);
   BlockRead(f, buffer[0], size);
   Close(f);
-  reserve_space_for_file(file_index, size);
-  save_data(Addr(buffer[0]), file_list[file_index].offset, size);
+  save_file(Addr(buffer[0]), file_index, size);
 end;
 
 procedure TArchive.load_palette(file_index, palette_index: integer);

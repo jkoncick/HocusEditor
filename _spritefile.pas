@@ -47,6 +47,7 @@ type
     procedure load_from_archive;
     procedure save_to_archive;
     procedure load_sprite(dest: TBitmap; transparent_color: TColor; sprite_set, sprite_num: integer);
+    function get_max_used_sprite(sprite_set: integer): integer;
 
   end;
 
@@ -55,7 +56,7 @@ var
 
 implementation
 
-uses _archive, _exefile;
+uses _archive, _exefile, Math;
 
 { TSpriteFile }
 
@@ -77,13 +78,13 @@ end;
 
 procedure TSpriteFile.save_to_archive;
 begin
-
+  Archive.save_file(file_data, Archive.sprite_file_index, file_size);
 end;
 
 procedure TSpriteFile.load_sprite(dest: TBitmap; transparent_color: TColor; sprite_set, sprite_num: integer);
 var
   i, j: integer;
-  sprite_entry: TSpriteEntry;
+  sprite_entry: ^TSpriteEntry;
   layout_off, pixel_off: Cardinal;
   layout_data: TByteArrPtr;
   pixel_data: TByteArrPtr;
@@ -96,16 +97,10 @@ begin
   transparent_color := ((transparent_color and $FF) shl 16) or (transparent_color and $FF00) or ((transparent_color and $FF0000) shr 16);
   for i := 0 to Length(pixel_buffer) - 1 do
     pixel_buffer[i] := transparent_color;
-  sprite_entry := (sprite_entries[sprite_set]);
+  sprite_entry := Addr(sprite_entries[sprite_set]);
   layout_off := sprite_entry.iLayoutStarts[sprite_num];
   pixel_off := sprite_entry.iPixelStarts[sprite_num] * 4;
-  if (pixel_off >= sprite_entry.iPixelsSize) or
-     (layout_off >= sprite_entry.iPixelsOff) or
-     //((pixel_off >= (sprite_entry.iPixelStarts[20] * 4)) and (sprite_num < 20)) or
-     //((layout_off >= (sprite_entry.iLayoutStarts[20])) and (sprite_num < 20)) or
-     //((pixel_off <= (sprite_entry.iPixelStarts[20] * 4)) and (sprite_num > 20)) or
-     //((layout_off <= (sprite_entry.iLayoutStarts[20])) and (sprite_num > 20)) or
-     false then
+  if (pixel_off >= sprite_entry.iPixelsSize) or (layout_off >= sprite_entry.iPixelsOff) then
   begin
     SetBitmapBits(dest.Handle, sizeof(pixel_buffer), Addr(pixel_buffer));
     dest.Modified := true;
@@ -148,6 +143,21 @@ begin
   end;
   SetBitmapBits(dest.Handle, sizeof(pixel_buffer), Addr(pixel_buffer));
   dest.Modified := true;
+end;
+
+function TSpriteFile.get_max_used_sprite(sprite_set: integer): integer;
+var
+  entry: ^TSpriteEntry;
+  max_used_sprite: integer;
+begin
+  entry := Addr(sprite_entries[sprite_set]);
+  max_used_sprite := 0;
+  max_used_sprite := max(max_used_sprite, entry.iStandFrame2);
+  max_used_sprite := max(max_used_sprite, entry.iWalkFrame2);
+  max_used_sprite := max(max_used_sprite, entry.iFallFrame);
+  max_used_sprite := max(max_used_sprite, entry.iShootDashFrame2);
+  max_used_sprite := max(max_used_sprite, entry.iProjectileF2);
+  result := max_used_sprite;
 end;
 
 end.

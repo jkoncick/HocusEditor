@@ -3,7 +3,7 @@ object SpriteDialog: TSpriteDialog
   Top = 116
   BorderStyle = bsDialog
   Caption = 'Sprites'
-  ClientHeight = 538
+  ClientHeight = 529
   ClientWidth = 1016
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -13,11 +13,12 @@ object SpriteDialog: TSpriteDialog
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object SpriteImage: TImage
     Left = 128
     Top = 8
     Width = 880
@@ -121,18 +122,24 @@ object SpriteDialog: TSpriteDialog
     Height = 13
     Caption = 'to'
   end
-  object Label1: TLabel
+  object lbTo4: TLabel
     Left = 534
     Top = 472
     Width = 9
     Height = 13
     Caption = 'to'
   end
+  object lbSpriteNameCustom: TLabel
+    Left = 336
+    Top = 340
+    Width = 3
+    Height = 13
+  end
   object lbxSpriteSetList: TListBox
     Left = 0
     Top = 0
     Width = 121
-    Height = 538
+    Height = 529
     Align = alLeft
     ItemHeight = 13
     TabOrder = 0
@@ -145,9 +152,10 @@ object SpriteDialog: TSpriteDialog
     Height = 22
     Increment = 4
     MaxValue = 320
-    MinValue = -1
+    MinValue = 0
     TabOrder = 1
     Value = 0
+    OnChange = seSpriteSizeChange
   end
   object seSpriteHeight: TSpinEdit
     Left = 232
@@ -155,9 +163,10 @@ object SpriteDialog: TSpriteDialog
     Width = 65
     Height = 22
     MaxValue = 200
-    MinValue = -1
+    MinValue = 0
     TabOrder = 2
     Value = 0
+    OnChange = seSpriteSizeChange
   end
   object seProjectileWidth: TSpinEdit
     Left = 480
@@ -169,6 +178,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 3
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seProjectileHeight: TSpinEdit
     Left = 480
@@ -179,6 +189,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 4
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seProjectileYOff: TSpinEdit
     Left = 480
@@ -189,6 +200,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 5
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seStandFrameFirst: TSpinEdit
     Left = 232
@@ -199,6 +211,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 6
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seWalkFrameFirst: TSpinEdit
     Left = 232
@@ -209,6 +222,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 7
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seShootDashFrameFirst: TSpinEdit
     Left = 232
@@ -219,6 +233,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 8
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seStandFrameLast: TSpinEdit
     Left = 304
@@ -229,6 +244,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 9
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seWalkFrameLast: TSpinEdit
     Left = 304
@@ -239,6 +255,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 10
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seShootDashFrameLast: TSpinEdit
     Left = 304
@@ -249,6 +266,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 11
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seProjectileFrameFirst: TSpinEdit
     Left = 480
@@ -259,6 +277,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 12
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seProjectileFrameLast: TSpinEdit
     Left = 552
@@ -269,6 +288,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 13
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seJumpFrame: TSpinEdit
     Left = 480
@@ -279,6 +299,7 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 14
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object seFallFrame: TSpinEdit
     Left = 552
@@ -289,13 +310,57 @@ object SpriteDialog: TSpriteDialog
     MinValue = -1
     TabOrder = 15
     Value = 0
+    OnChange = seSpriteSetPropertyChange
   end
   object edSpriteName: TEdit
     Left = 200
     Top = 336
-    Width = 177
+    Width = 129
     Height = 21
     MaxLength = 21
     TabOrder = 16
+  end
+  object btnBackgroundColor: TButton
+    Left = 592
+    Top = 336
+    Width = 121
+    Height = 25
+    Caption = 'Background color...'
+    TabOrder = 17
+    OnClick = btnBackgroundColorClick
+  end
+  object btnSaveChanges: TBitBtn
+    Left = 720
+    Top = 336
+    Width = 121
+    Height = 25
+    Caption = 'Save changes'
+    TabOrder = 18
+    OnClick = btnSaveChangesClick
+    Kind = bkOK
+  end
+  object cbShowNumbers: TCheckBox
+    Left = 480
+    Top = 340
+    Width = 97
+    Height = 17
+    Caption = 'Show numbers'
+    TabOrder = 19
+    OnClick = cbShowNumbersClick
+  end
+  object btnUndoChanges: TBitBtn
+    Left = 848
+    Top = 336
+    Width = 121
+    Height = 25
+    Caption = 'Undo changes'
+    TabOrder = 20
+    OnClick = btnUndoChangesClick
+    Kind = bkCancel
+  end
+  object ColorDialog: TColorDialog
+    Color = 16769184
+    Left = 976
+    Top = 336
   end
 end
