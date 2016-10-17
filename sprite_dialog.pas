@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, _spritefile, _archive, ExtCtrls, Spin, Math, Buttons;
+  Dialogs, StdCtrls, _spritefile, _archive, ExtCtrls, Spin, Math, Buttons, pngimage;
 
 type
   TSpriteDialog = class(TForm)
@@ -47,6 +47,19 @@ type
     btnSaveChanges: TBitBtn;
     cbShowNumbers: TCheckBox;
     btnUndoChanges: TBitBtn;
+    btnExportSprites: TButton;
+    gbExportSprites: TGroupBox;
+    gbImportSprites: TGroupBox;
+    rbExportSingle: TRadioButton;
+    rbExportAllMultFiles: TRadioButton;
+    rbExportAllOneFile: TRadioButton;
+    pnExportFormat: TPanel;
+    rbExportPng: TRadioButton;
+    rbExportBmp: TRadioButton;
+    seExportSpriteNum: TSpinEdit;
+    ExportDialogPng: TSaveDialog;
+    ExportDialogBmp: TSaveDialog;
+    Label1: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -57,8 +70,8 @@ type
     procedure btnUndoChangesClick(Sender: TObject);
     procedure seSpriteSizeChange(Sender: TObject);
     procedure seSpriteSetPropertyChange(Sender: TObject);
+    procedure btnExportSpritesClick(Sender: TObject);
   private
-    sprite_buffer: TBitmap;
     updating: boolean;
     modified: boolean;
 
@@ -83,10 +96,6 @@ begin
   begin
     lbxSpriteSetList.Items.Add(inttostr(i) + ' - ' + SpriteFile.sprite_entries[i].cSpriteName);
   end;
-  sprite_buffer := TBitmap.Create;
-  sprite_buffer.Width := 320;
-  sprite_buffer.Height := 200;
-  sprite_buffer.PixelFormat := pf32bit;
   set_modified(false);
 end;
 
@@ -147,7 +156,10 @@ end;
 procedure TSpriteDialog.btnBackgroundColorClick(Sender: TObject);
 begin
   if ColorDialog.Execute then
+  begin
+    SpriteFile.update_transparent_color(ColorDialog.Color);
     render_all_sprites;
+  end;
 end;
 
 procedure TSpriteDialog.btnSaveChangesClick(Sender: TObject);
@@ -211,26 +223,27 @@ var
   entry: ^TSpriteEntry;
   width, height: integer;
   max_used_sprite: integer;
+  sprite_buffer: TBitmap;
 begin
   sprite_set := lbxSpriteSetList.ItemIndex;
   entry := Addr(SpriteFile.sprite_entries[sprite_set]);
   width := entry.iWidth4 * 4;
   height := entry.iHeight;
-  max_used_sprite := SpriteFile.get_max_used_sprite(sprite_set);
+  max_used_sprite := SpriteFile.get_used_sprite_count(sprite_set);
   SpriteImage.Canvas.Pen.Style := psClear;
   SpriteImage.Canvas.Brush.Color := ColorDialog.Color;
   SpriteImage.Canvas.Rectangle(0,0,SpriteImage.Width+1,SpriteImage.Height+1);
   SpriteImage.Canvas.Brush.Color := clWhite;
   for i := 0 to max_used_sprite do
   begin
-    SpriteFile.load_sprite(sprite_buffer, ColorDialog.Color, sprite_set, i);
+    sprite_buffer := SpriteFile.load_sprite(sprite_set, i, 0);
     SpriteImage.Canvas.CopyRect(Rect(i*width*2, 0,i*width*2 + width*2, height*2), sprite_buffer.Canvas, Rect(0,0,width,height));
     if cbShowNumbers.Checked then
     begin
       SpriteImage.Canvas.Rectangle(i*width*2, 0, i*width*2 + 15, 14);
       SpriteImage.Canvas.TextOut(i*width*2, 0, inttostr(i));
     end;
-    SpriteFile.load_sprite(sprite_buffer, ColorDialog.Color, sprite_set, i+20);
+    sprite_buffer := SpriteFile.load_sprite(sprite_set, i+20, 0);
     SpriteImage.Canvas.CopyRect(Rect(i*width*2, height*2,i*width*2 + width*2, height*4), sprite_buffer.Canvas, Rect(0,0,width,height));
     if cbShowNumbers.Checked then
     begin
@@ -245,6 +258,97 @@ begin
   modified := val;
   btnSaveChanges.Enabled := val;
   btnUndoChanges.Enabled := val;
+end;
+
+procedure TSpriteDialog.btnExportSpritesClick(Sender: TObject);
+var
+  sprite_buffer: TBitmap;
+  output_buffer: TBitmap;
+  output_filename: String;
+  file_base, file_ext: String;
+  save_dialog: TSaveDialog;
+  PNG: TPNGObject;
+  output_canvas: TCanvas;
+  i: integer;
+  sprite_set, sprite_num: integer;
+  entry: ^TSpriteEntry;
+  width, height: integer;
+  max_used_sprite: integer;
+  palette_num: integer;
+begin
+  sprite_set := lbxSpriteSetList.ItemIndex;
+  entry := Addr(SpriteFile.sprite_entries[sprite_set]);
+  width := entry.iWidth4 * 4;
+  height := entry.iHeight;
+  if rbExportPng.Checked then
+  begin
+    palette_num := 1;
+    save_dialog := ExportDialogPng;
+  end else
+  begin
+    palette_num := 0;
+    save_dialog := ExportDialogBmp;
+  end;
+  if save_dialog.Execute then
+    output_filename := save_dialog.FileName
+  else
+    exit;
+  max_used_sprite := SpriteFile.get_used_sprite_count(sprite_set);
+  output_buffer := TBitmap.Create;
+  output_buffer.PixelFormat := pf8bit;
+  output_buffer.Width := IfThen(rbExportAllOneFile.Checked, width * (max_used_sprite + 1), width);
+  output_buffer.Height := IfThen(rbExportAllOneFile.Checked, height * 2, height);
+  output_buffer.Palette := SpriteFile.get_palette_handle(palette_num);
+  output_canvas := output_buffer.Canvas;
+  // Export single sprite
+  if rbExportSingle.Checked then
+  begin
+    sprite_num := seExportSpriteNum.Value;
+    sprite_buffer := SpriteFile.load_sprite(sprite_set, sprite_num, palette_num);
+    output_canvas.CopyRect(Rect(0,0,width,height), sprite_buffer.Canvas, Rect(0,0,width,height));
+  end;
+  // Export all sprites into multiple files
+  if rbExportAllMultFiles.Checked then
+  begin
+    file_base := copy(output_filename, 0, strlen(PChar(output_filename)) - 4);
+    file_ext := ExtractFileExt(output_filename);
+    for i := 0 to max_used_sprite + 20 do
+    begin
+      if (i > max_used_sprite) and (i < 20) then
+        continue;
+      sprite_buffer := SpriteFile.load_sprite(sprite_set, i, palette_num);
+      output_canvas.CopyRect(Rect(0,0,width,height), sprite_buffer.Canvas, Rect(0,0,width,height));
+      output_filename := Format('%s_%.2d%s',[file_base, i, file_ext]);
+      if rbExportPng.Checked then
+      begin
+        PNG := TPNGObject.Create;
+        PNG.Assign(output_buffer);
+        PNG.TransparentColor := $010101;
+        PNG.SaveToFile(output_filename);
+      end else
+        output_buffer.SaveToFile(output_filename);
+    end;
+    exit;
+  end;
+  // Export all sprites into one file
+  if rbExportAllOneFile.Checked then
+  begin
+    for i := 0 to max_used_sprite do
+    begin
+      sprite_buffer := SpriteFile.load_sprite(sprite_set, i, palette_num);
+      output_canvas.CopyRect(Rect(i*width, 0,i*width + width, height), sprite_buffer.Canvas, Rect(0,0,width,height));
+      sprite_buffer := SpriteFile.load_sprite(sprite_set, i+20, palette_num);
+      output_canvas.CopyRect(Rect(i*width, height,i*width + width, height*2), sprite_buffer.Canvas, Rect(0,0,width,height));
+    end;
+  end;
+  if rbExportPng.Checked then
+  begin
+    PNG := TPNGObject.Create;
+    PNG.Assign(output_buffer);
+    PNG.TransparentColor := $010101;
+    PNG.SaveToFile(output_filename);
+  end else
+    output_buffer.SaveToFile(output_filename);
 end;
 
 end.

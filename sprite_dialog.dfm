@@ -358,9 +358,117 @@ object SpriteDialog: TSpriteDialog
     OnClick = btnUndoChangesClick
     Kind = bkCancel
   end
+  object gbExportSprites: TGroupBox
+    Left = 608
+    Top = 368
+    Width = 193
+    Height = 153
+    Caption = ' Export sprites '
+    TabOrder = 21
+    object btnExportSprites: TButton
+      Left = 14
+      Top = 120
+      Width = 115
+      Height = 22
+      Caption = 'Export sprites'
+      TabOrder = 0
+      OnClick = btnExportSpritesClick
+    end
+    object rbExportSingle: TRadioButton
+      Left = 16
+      Top = 24
+      Width = 89
+      Height = 17
+      Caption = 'Single sprite:'
+      Checked = True
+      TabOrder = 1
+      TabStop = True
+    end
+    object rbExportAllMultFiles: TRadioButton
+      Left = 16
+      Top = 48
+      Width = 145
+      Height = 17
+      Caption = 'All sprites in multiple files'
+      TabOrder = 2
+    end
+    object rbExportAllOneFile: TRadioButton
+      Left = 16
+      Top = 72
+      Width = 113
+      Height = 17
+      Caption = 'All sprites in one file'
+      TabOrder = 3
+    end
+    object pnExportFormat: TPanel
+      Left = 16
+      Top = 96
+      Width = 161
+      Height = 21
+      BevelOuter = bvNone
+      TabOrder = 4
+      object rbExportPng: TRadioButton
+        Left = 0
+        Top = 0
+        Width = 49
+        Height = 17
+        Caption = 'PNG'
+        Checked = True
+        TabOrder = 0
+        TabStop = True
+      end
+      object rbExportBmp: TRadioButton
+        Left = 48
+        Top = 0
+        Width = 65
+        Height = 17
+        Caption = 'BMP'
+        TabOrder = 1
+      end
+    end
+    object seExportSpriteNum: TSpinEdit
+      Left = 104
+      Top = 20
+      Width = 57
+      Height = 22
+      MaxValue = 39
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
+    end
+  end
+  object gbImportSprites: TGroupBox
+    Left = 808
+    Top = 368
+    Width = 193
+    Height = 153
+    Caption = ' Import sprites '
+    TabOrder = 22
+    object Label1: TLabel
+      Left = 16
+      Top = 24
+      Width = 70
+      Height = 13
+      Caption = 'Coming soon...'
+    end
+  end
   object ColorDialog: TColorDialog
     Color = 16769184
     Left = 976
     Top = 336
+  end
+  object ExportDialogPng: TSaveDialog
+    DefaultExt = 'png'
+    Filter = 'PNG Image (*.png)|*.png'
+    Title = 'Export sprites'
+    Left = 552
+    Top = 368
+  end
+  object ExportDialogBmp: TSaveDialog
+    DefaultExt = 'bmp'
+    Filter = 'BMP Image (*.bmp)|*.bmp'
+    Title = 'Export sprites'
+    Left = 552
+    Top = 400
   end
 end

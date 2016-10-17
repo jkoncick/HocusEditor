@@ -10,7 +10,9 @@ uses
   // Dialogs
   set_dialog, block_preset_dialog, level_props_dialog, sprite_dialog,
   // Units
-  _renderer, _map, _tileset, _settings, _archive, _savegame, _spritefile;
+  _renderer, _map, _tileset, _settings, _archive, _savegame, _spritefile,
+  // External libraries
+  pngimage;
 
 type
   TImage = class(ExtCtrls.TImage)
@@ -172,6 +174,7 @@ type
     ModPatchDialog: TOpenDialog;
     N11: TMenuItem;
     Sprites1: TMenuItem;
+    sbDrawSprites: TSpeedButton;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -389,9 +392,11 @@ begin
   top := 60;
   // Load settings
   Settings.load_precreate_editor_settings;
+  // Initialize sprite file
+  SpriteFile.init;
   // Initialize archive
   Archive.init;
-  // Initialize sprite file
+  // Load sprite file from archive
   SpriteFile.load_from_archive;
   // Load and initialize graphics
   Renderer.init;
@@ -628,6 +633,7 @@ begin
       ord('H'): begin sbHiddenLayer.Down := not sbHiddenLayer.Down; end;
       ord('J'): begin sbObjectLayer.Down := not sbObjectLayer.Down; end;
       ord('M'): begin sbShowMarkers.Down := not sbShowMarkers.Down; end;
+      ord('P'): begin sbDrawSprites.Down := not sbDrawSprites.Down; end;
       ord('G'): begin sbShowgrid.Down := not sbShowgrid.Down; end;
       else
         exit;
@@ -829,18 +835,22 @@ end;
 procedure TMainWindow.Savemapimage1Click(Sender: TObject);
 var
   tmp_bitmap: TBitmap;
+  PNG: TPNGObject;
 begin
   if not Map.loaded then
     exit;
   if MapImageSaveDialog.Execute then
   begin
     tmp_bitmap := TBitmap.Create;
+    PNG := TPNGObject.Create;
     tmp_bitmap.Width := Map.width * 32;
     tmp_bitmap.Height := Map.height * 32;
     Renderer.render_map_contents(tmp_bitmap.Canvas, 0, 0, Map.width, Map.height, 0, 0, Addr(Map.data),
-      sbBackgroundLayer.Down, sbForegroundLayer.Down, sbHiddenLayer.Down, sbObjectLayer.Down, sbShowMarkers.Down, sbShowGrid.Down,
+      sbBackgroundLayer.Down, sbForegroundLayer.Down, sbHiddenLayer.Down, sbObjectLayer.Down, sbShowMarkers.Down, sbDrawSprites.Down, sbShowGrid.Down,
       false);
-    tmp_bitmap.SaveToFile(MapImageSaveDialog.FileName);
+    PNG.Assign(tmp_bitmap);
+    //tmp_bitmap.SaveToFile(MapImageSaveDialog.FileName);
+    PNG.SaveToFile(MapImageSaveDialog.FileName);
     tmp_bitmap.Destroy;
   end;
 end;
@@ -1088,7 +1098,7 @@ begin
               'Space = Open preset window'#13'Shift + Space = Pattern presets'#13'Ctrl + Space = Block presets'#13'Arrows = Scroll map'#13'F1 - F4 = Select layer'#13'Tab = Toggle background/foreground layer'#13'Num +/- = Change object group in selected block'#13#13+
               'Num 2/4/6/8 or Shift + Arrows:'#13'Tile mode: Change selected tile'#13'Pattern mode: Rotate pattern'#13'Block mode: Move block'#13#13+
               'Shift + 1 - 8 = Change brush size'#13'Shift + E = Tile mode'#13'Shift + D = Pattern mode'#13'Shift + C = Block mode'#13'Shift + A = All layers mode'#13'Shift + S = Save pattern/block as preset'#13#13+
-              'Ctrl + A = Toggle foreground and hidden layer'#13'Ctrl + B/F/H/J = Toggle specific layer'#13'Ctrl + M = Show markers'#13'Ctrl + G = Show grid'#13#13+
+              'Ctrl + A = Toggle foreground and hidden layer'#13'Ctrl + B/F/H/J = Toggle specific layer'#13'Ctrl + M = Show markers'#13'Ctrl + P = Draw sprites'#13'Ctrl + G = Show grid'#13#13+
               '0 - 9, A - Z = Quick-select preset',
               'Key Shortcuts',
               MB_OK or MB_ICONINFORMATION
@@ -1910,7 +1920,7 @@ begin
   if not Map.loaded then
     exit;
   Renderer.render_map_contents(MapCanvas.Canvas, map_canvas_left, map_canvas_top, map_canvas_width, map_canvas_height, 0, 0, Addr(Map.data),
-    sbBackgroundLayer.Down, sbForegroundLayer.Down, sbHiddenLayer.Down, sbObjectLayer.Down, sbShowMarkers.Down, sbShowGrid.Down,
+    sbBackgroundLayer.Down, sbForegroundLayer.Down, sbHiddenLayer.Down, sbObjectLayer.Down, sbShowMarkers.Down, sbDrawSprites.Down, sbShowGrid.Down,
     true);
   render_editing_marker;
 end;
@@ -2611,7 +2621,7 @@ begin
   // Render cursor image
   all_layers := cbAllLayers.Checked;
   Renderer.render_map_contents(CursorImage.Canvas, 0, 0, cur_block.width, cur_block.height, 0, 0, Addr(cur_block.data),
-    (cur_layer = 0) or all_layers, (cur_layer = 1) or all_layers, (cur_layer = 2) or all_layers, all_layers, false, false,
+    (cur_layer = 0) or all_layers, (cur_layer = 1) or all_layers, (cur_layer = 2) or all_layers, all_layers, false, false, false,
     false);
   CursorImage.Canvas.Pen.Color := IfThen(all_layers, clMaroon, layer_marker_color[cur_layer]);
   CursorImage.Canvas.Brush.Style := bsClear;
@@ -2708,7 +2718,7 @@ begin
     border_y := (BlockImage.Height - cur_block.height * 32) div 2;
     all_layers := cbAllLayers.Checked;
     Renderer.render_map_contents(BlockImage.Canvas, 0, 0, cur_block.width, cur_block.height, border_x, border_y, Addr(cur_block.data),
-      (cur_layer = 0) or all_layers, (cur_layer = 1) or all_layers, (cur_layer = 2) or all_layers, all_layers, false, false,
+      (cur_layer = 0) or all_layers, (cur_layer = 1) or all_layers, (cur_layer = 2) or all_layers, all_layers, false, false, false,
       false);
   end;
 end;

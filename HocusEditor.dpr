@@ -14,7 +14,10 @@ uses
   _savegame in '_savegame.pas',
   _exefile in '_exefile.pas',
   _spritefile in '_spritefile.pas',
-  sprite_dialog in 'sprite_dialog.pas' {SpriteDialog};
+  sprite_dialog in 'sprite_dialog.pas' {SpriteDialog},
+  pngimage in 'pngdelphi/pngimage.pas',
+  zlibpas in 'pngdelphi/zlibpas.pas',
+  pnglang in 'pngdelphi/pnglang.pas';
 
 {$R *.res}
 

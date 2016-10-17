@@ -37,7 +37,7 @@ type
 
     procedure render_map_contents(cnv_target: TCanvas; cnv_left, cnv_top, cnv_width, cnv_height: word; cnv_off_left, cnv_off_top: integer;
       data: TMapDataPtr;
-      o_bglr, o_fglr, o_hdnlr, o_objlr, o_show_markers, o_show_grid,
+      o_bglr, o_fglr, o_hdnlr, o_objlr, o_show_markers, o_draw_sprites, o_show_grid,
       o_rendering_optimization: boolean);
     procedure render_minimap_contents(cnv_target: TCanvas; data: TMapDataPtr; data_width, data_height: word);
 
@@ -52,7 +52,7 @@ var
 
 implementation
 
-uses SysUtils, Math, main, _tileset, _archive;
+uses SysUtils, Math, main, _tileset, _archive, _spritefile;
 
 procedure TRenderer.init;
 begin
@@ -109,7 +109,7 @@ end;
 
 procedure TRenderer.render_map_contents(cnv_target: TCanvas; cnv_left, cnv_top, cnv_width, cnv_height: word; cnv_off_left, cnv_off_top: integer;
   data: TMapDataPtr;
-  o_bglr, o_fglr, o_hdnlr, o_objlr, o_show_markers, o_show_grid,
+  o_bglr, o_fglr, o_hdnlr, o_objlr, o_show_markers, o_draw_sprites, o_show_grid,
   o_rendering_optimization: boolean);
 var
   min_x, min_y, max_x, max_y: integer;
@@ -130,6 +130,8 @@ var
   index: integer;
   switch_coords: ^TLvlSwitchCoordinates;
   trig_coords: ^TLvlTriggerCoordinates;
+  sprite, sprite_mask: TBitmap;
+  sprite_set: integer;
 begin
   if not Map.loaded then
     exit;
@@ -305,6 +307,39 @@ begin
         mark_text := 'Targ';
       if mark_text <> '' then
         cnv_target.TextOut(dest_rect.Left+3, dest_rect.Top+15, mark_text);
+    end;
+  end;
+  // Draw sprites
+  if o_draw_sprites then
+  begin
+    cnv_target.Pen.Width := 1;
+    for y:= max(min_y - 4, 0 - cnv_top) to max_y do
+    begin
+      for x:= max(min_x - 4, 0 - cnv_left) to max_x do
+      begin
+        map_tile := Addr(data[x + cnv_left, y + cnv_top]);
+        obj := map_tile.objects;
+        obj_type := Map.get_object_type(obj, index);
+        sprite_set := -1;
+        // There is a monster
+        if obj_type = otMonster then
+          sprite_set := Map.leveldata.monster_info[index].SpriteSet;
+        // There is player start
+        if ((x + cnv_left) = Map.leveldata.player_info.PlayerX) and ((y + cnv_top) = Map.leveldata.player_info.PlayerY) then
+          sprite_set := 0;
+        // Draw sprite
+        if sprite_set <> -1 then
+        begin
+          sprite := SpriteFile.get_preloaded_sprite(sprite_set, sprite_mask);
+          dest_rect := Rect(cnv_off_left + x*32, cnv_off_top + y*32, cnv_off_left + x*32+sprite.Width*2, cnv_off_top + y*32+sprite.Height*2);
+          src_rect := Rect(0,0,sprite.Width,sprite.Height);
+          cnv_target.CopyMode := cmSrcAnd;
+          cnv_target.CopyRect(dest_rect, sprite_mask.Canvas, src_rect);
+          cnv_target.CopyMode := cmSrcPaint;
+          cnv_target.CopyRect(dest_rect, sprite.Canvas, src_rect);
+          cnv_target.CopyMode := cmSrcCopy;
+        end;
+      end;
     end;
   end;
   cnv_target.Pen.Width := 1;

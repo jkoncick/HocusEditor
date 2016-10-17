@@ -557,6 +557,8 @@ var
   i: integer;
 begin
   result := otNone;
+  if value = empty_object then
+    exit;
   index := value;
   for i := ord(otItem) to ord(otMonsterTrigger) do
   begin

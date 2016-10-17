@@ -129,7 +129,7 @@ object MainWindow: TMainWindow
     object sbBackgroundLayer: TSpeedButton
       Left = 8
       Top = 80
-      Width = 45
+      Width = 38
       Height = 22
       Hint = 'Background layer (Ctrl+B)'
       AllowAllUp = True
@@ -141,9 +141,9 @@ object MainWindow: TMainWindow
       OnClick = RenderSettingChange
     end
     object sbForegroundLayer: TSpeedButton
-      Left = 52
+      Left = 46
       Top = 80
-      Width = 45
+      Width = 38
       Height = 22
       Hint = 'Foreground layer (Ctrl+F)'
       AllowAllUp = True
@@ -155,9 +155,9 @@ object MainWindow: TMainWindow
       OnClick = RenderSettingChange
     end
     object sbHiddenLayer: TSpeedButton
-      Left = 96
+      Left = 84
       Top = 80
-      Width = 45
+      Width = 38
       Height = 22
       Hint = 'Hidden layer (Ctrl+H)'
       AllowAllUp = True
@@ -169,9 +169,9 @@ object MainWindow: TMainWindow
       OnClick = RenderSettingChange
     end
     object sbObjectLayer: TSpeedButton
-      Left = 140
+      Left = 122
       Top = 80
-      Width = 45
+      Width = 38
       Height = 22
       Hint = 'Object layer (Ctrl+J)'
       AllowAllUp = True
@@ -183,9 +183,9 @@ object MainWindow: TMainWindow
       OnClick = RenderSettingChange
     end
     object sbShowMarkers: TSpeedButton
-      Left = 184
+      Left = 160
       Top = 80
-      Width = 45
+      Width = 38
       Height = 22
       Hint = 'Show markers (Ctrl+M)'
       AllowAllUp = True
@@ -197,14 +197,27 @@ object MainWindow: TMainWindow
       OnClick = RenderSettingChange
     end
     object sbShowGrid: TSpeedButton
-      Left = 228
+      Left = 236
       Top = 80
-      Width = 45
+      Width = 38
       Height = 22
       Hint = 'Show grid (Ctrl+G)'
       AllowAllUp = True
-      GroupIndex = 6
+      GroupIndex = 7
       Caption = 'Grid'
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = RenderSettingChange
+    end
+    object sbDrawSprites: TSpeedButton
+      Left = 198
+      Top = 80
+      Width = 38
+      Height = 22
+      Hint = 'Draw sprites (Ctrl+P)'
+      AllowAllUp = True
+      GroupIndex = 6
+      Caption = 'Sprit'
       ParentShowHint = False
       ShowHint = True
       OnClick = RenderSettingChange
@@ -1196,8 +1209,8 @@ object MainWindow: TMainWindow
     Left = 160
   end
   object MapImageSaveDialog: TSaveDialog
-    DefaultExt = 'bmp'
-    Filter = 'Image (*.bmp)|*.bmp'
+    DefaultExt = 'png'
+    Filter = 'Image (*.png)|*.png'
     Title = 'Save map image'
     Left = 128
   end

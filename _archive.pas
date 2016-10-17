@@ -81,7 +81,7 @@ implementation
 
 { TArchive }
 
-uses SysUtils, Classes, IniFiles, _settings, _map, main;
+uses SysUtils, Classes, IniFiles, _settings, _map, main, _spritefile;
 
 procedure TArchive.init;
 var
@@ -354,6 +354,7 @@ begin
   offset := palette_index * 128;
   for i := 0 to 127 do
     palette[i + offset] := (tmp_palette[i,0] shl 18) + (tmp_palette[i,1] shl 10) + (tmp_palette[i,2] shl 2);
+  SpriteFile.update_palette;
 end;
 
 procedure TArchive.load_pcx_image(target: TBitmap; file_index: integer);
