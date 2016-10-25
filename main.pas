@@ -948,6 +948,13 @@ begin
         render_map;
       end;
     end;
+    // If importing a sprite file, reload it
+    if file_index = Archive.sprite_file_index then
+    begin
+      SpriteFile.load_from_archive;
+      SpriteDialog.init_sprite_list;
+      render_map;
+    end;
   end;
 end;
 

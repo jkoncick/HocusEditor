@@ -108,7 +108,7 @@ var
 
 implementation
 
-uses _archive, _map, _tileset;
+uses _archive, _map, _tileset, sprite_dialog;
 
 {$R *.dfm}
 
@@ -376,6 +376,8 @@ begin
   last_backdrop_image := index;
   Archive.load_palette(Archive.first_backdrop_palette_file_index + index, 1);
   Archive.load_pcx_image(imgBackdropImage.Picture.Bitmap, Archive.first_backdrop_file_index + index);
+  // Upper palette was changed, need to re-render all sprites showed on sprite dialog
+  SpriteDialog.render_all_sprites;
 end;
 
 procedure TLevelPropertiesDialog.update_animation_defined_tiles;

@@ -690,6 +690,8 @@ begin
             break;
           end;
         end;
+        // Monster sprite is bigger than one tile
+        Renderer.invalidate_map_tile(x+4, y+4);
       end;
     otTeleport:
       begin
