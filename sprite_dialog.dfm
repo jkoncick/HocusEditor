@@ -55,6 +55,7 @@ object SpriteDialog: TSpriteDialog
     Height = 21
     MaxLength = 21
     TabOrder = 1
+    OnChange = edSpriteNameChange
   end
   object btnBackgroundColor: TButton
     Left = 616
@@ -381,7 +382,7 @@ object SpriteDialog: TSpriteDialog
       Top = 132
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 0
       Value = 0
@@ -392,7 +393,7 @@ object SpriteDialog: TSpriteDialog
       Top = 104
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 1
       Value = 0
@@ -403,7 +404,7 @@ object SpriteDialog: TSpriteDialog
       Top = 76
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 2
       Value = 0
@@ -437,7 +438,7 @@ object SpriteDialog: TSpriteDialog
       Top = 132
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 5
       Value = 0
@@ -448,7 +449,7 @@ object SpriteDialog: TSpriteDialog
       Top = 104
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 6
       Value = 0
@@ -459,7 +460,7 @@ object SpriteDialog: TSpriteDialog
       Top = 76
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 7
       Value = 0
@@ -470,7 +471,7 @@ object SpriteDialog: TSpriteDialog
       Top = 132
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 8
       Value = 0
@@ -481,7 +482,7 @@ object SpriteDialog: TSpriteDialog
       Top = 104
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 9
       Value = 0
@@ -526,7 +527,7 @@ object SpriteDialog: TSpriteDialog
       Top = 104
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 13
       Value = 0
@@ -537,7 +538,7 @@ object SpriteDialog: TSpriteDialog
       Top = 132
       Width = 49
       Height = 22
-      MaxValue = 39
+      MaxValue = 19
       MinValue = -1
       TabOrder = 14
       Value = 0

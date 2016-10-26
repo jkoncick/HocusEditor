@@ -12,6 +12,7 @@ type
     // Preferences
     PreserveGUISettings: boolean;
     HidePresetWindow: boolean;
+    UseCustomMonsterNames: boolean;
     CheckMapErrorsOnSave: boolean;
     CheckMapErrorsOnTest: boolean;
     AlwaysAskOnQuit: boolean;
@@ -42,7 +43,7 @@ var
 implementation
 
 uses
-  SysUtils, main, block_preset_dialog, set_dialog, level_props_dialog, _map;
+  SysUtils, main, block_preset_dialog, set_dialog, level_props_dialog, sprite_dialog, _map;
 
 procedure TSettings.load_precreate_editor_settings;
 var
@@ -53,6 +54,7 @@ begin
   // Load preferences
   PreserveGUISettings := ini.ReadBool('Preferences', 'PreserveGUISettings', true);
   HidePresetWindow := ini.ReadBool('Preferences', 'HidePresetWindow', true);
+  UseCustomMonsterNames := ini.ReadBool('Preferences', 'UseCustomMonsterNames', true);
   CheckMapErrorsOnSave := ini.ReadBool('Preferences', 'CheckMapErrorsOnSave', true);
   CheckMapErrorsOnTest := ini.ReadBool('Preferences', 'CheckMapErrorsOnTest', true);
   AlwaysAskOnQuit := ini.ReadBool('Preferences', 'AlwaysAskOnQuit', true);
@@ -94,6 +96,8 @@ begin
   SetDialog.Top := ini.ReadInteger('GUI','SetDialog.Top',SetDialog.Top);
   LevelPropertiesDialog.Left := ini.ReadInteger('GUI','LevelPropertiesDialog.Left',SetDialog.Left);
   LevelPropertiesDialog.Top := ini.ReadInteger('GUI','LevelPropertiesDialog.Top',SetDialog.Top);
+  SpriteDialog.Left := ini.ReadInteger('GUI','SpriteDialog.Left',SetDialog.Left);
+  SpriteDialog.Top := ini.ReadInteger('GUI','SpriteDialog.Top',SetDialog.Top);
   ini.Destroy;
 end;
 
@@ -106,6 +110,7 @@ begin
   // Save preferences
   ini.WriteBool('Preferences', 'PreserveGUISettings', PreserveGUISettings);
   ini.WriteBool('Preferences', 'HidePresetWindow', HidePresetWindow);
+  ini.WriteBool('Preferences', 'UseCustomMonsterNames', UseCustomMonsterNames);
   ini.WriteBool('Preferences', 'CheckMapErrorsOnSave', CheckMapErrorsOnSave);
   ini.WriteBool('Preferences', 'CheckMapErrorsOnTest', CheckMapErrorsOnTest);
   ini.WriteBool('Preferences', 'AlwaysAskOnQuit', AlwaysAskOnQuit);
@@ -130,6 +135,8 @@ begin
   ini.WriteInteger('GUI','SetDialog.Top',SetDialog.Top);
   ini.WriteInteger('GUI','LevelPropertiesDialog.Left',LevelPropertiesDialog.Left);
   ini.WriteInteger('GUI','LevelPropertiesDialog.Top',LevelPropertiesDialog.Top);
+  ini.WriteInteger('GUI','SpriteDialog.Left',SpriteDialog.Left);
+  ini.WriteInteger('GUI','SpriteDialog.Top',SpriteDialog.Top);
   ini.UpdateFile;
   ini.Destroy;
 end;

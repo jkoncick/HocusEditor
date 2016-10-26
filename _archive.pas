@@ -425,6 +425,11 @@ end;
 
 function TArchive.get_monster_type_name(sprite_set: word): string;
 begin
+  if Settings.UseCustomMonsterNames = false then
+  begin
+    result := SpriteFile.sprite_entries[sprite_set].cSpriteName;
+    exit;
+  end;
   if (sprite_set >= Length(Archive.monster_type_names)) or (monster_type_names[sprite_set] = '') then
     result := 'Sprite set ' + inttostr(sprite_set)
   else

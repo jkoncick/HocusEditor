@@ -63,7 +63,7 @@ type
     procedure import_sprite(sprite_set, sprite_num: integer; input_image: TBitmap; transparent_index: integer; use_upper_pal: boolean);
     procedure erase_sprite(sprite_set, sprite_num: integer);
     function get_preloaded_sprite(sprite_set: integer; var mask: TBitmap): TBitmap;
-    function get_used_sprite_count(sprite_set: integer): integer;
+    function get_max_used_sprite_num(sprite_set: integer): integer;
   private
     procedure invalidate_preloaded_sprites;
     procedure replace_sprite_blocks(sprite_set, sprite_num, layout_size, pixel_size: integer; layout_data, pixel_data: Pointer);
@@ -107,6 +107,7 @@ var
   sprite_file_entry: ^TFileEntry;
   first_sprite_data_offset: cardinal;
   intptr: ^cardinal;
+  i, j: integer;
 begin
   invalidate_preloaded_sprites;
   sprite_file_entry := Addr(Archive.file_list[Archive.sprite_file_index]);
@@ -119,6 +120,19 @@ begin
   sprite_entries := Addr(file_data[0]);
   SetLength(preloaded_sprites, num_sprite_entries);
   SetLength(preloaded_sprites_mask, num_sprite_entries);
+  // Remove garbage data from unused sprites, so that importing can work properly
+  if sprite_entries[0].iLayoutStarts[39] <> 0 then
+    exit;
+  for i := 0 to num_sprite_entries - 1 do
+  begin
+    for j := get_max_used_sprite_num(i) + 1 to 19 do
+    begin
+      sprite_entries[i].iLayoutStarts[j] := sprite_entries[i].iLayoutStarts[20];
+      sprite_entries[i].iPixelStarts[j] := sprite_entries[i].iPixelStarts[20];
+      sprite_entries[i].iLayoutStarts[j+20] := sprite_entries[i].iLayoutSize;
+      sprite_entries[i].iPixelStarts[j+20] := sprite_entries[i].iPixelsSize div 4;
+    end;
+  end;
 end;
 
 procedure TSpriteFile.save_to_archive;
@@ -400,7 +414,7 @@ begin
   result := bmp;
 end;
 
-function TSpriteFile.get_used_sprite_count(sprite_set: integer): integer;
+function TSpriteFile.get_max_used_sprite_num(sprite_set: integer): integer;
 var
   entry: ^TSpriteEntry;
   max_used_sprite: integer;
@@ -434,24 +448,18 @@ end;
 procedure TSpriteFile.replace_sprite_blocks(sprite_set, sprite_num, layout_size, pixel_size: integer; layout_data, pixel_data: Pointer);
 var
   sprite_entry: ^TSpriteEntry;
-  max_used_sprite: integer;
   old_layout_size, old_pixel_size: integer;
   layout_shift, pixel_shift: integer;
   j: integer;
 begin
   sprite_entry := Addr(sprite_entries[sprite_set]);
   // Get size of the original layout and pixels blocks
-  max_used_sprite := get_used_sprite_count(sprite_set);
-  if sprite_num = max_used_sprite then
-    old_layout_size := sprite_entry.iLayoutStarts[20]
-  else if sprite_num = (max_used_sprite + 20) then
+  if sprite_num = 39 then
     old_layout_size := sprite_entry.iLayoutSize
   else
     old_layout_size := sprite_entry.iLayoutStarts[sprite_num + 1];
   old_layout_size := old_layout_size - sprite_entry.iLayoutStarts[sprite_num];
-  if sprite_num = max_used_sprite then
-    old_pixel_size := sprite_entry.iPixelStarts[20] * 4
-  else if sprite_num = (max_used_sprite + 20) then
+  if sprite_num = 39 then
     old_pixel_size := sprite_entry.iPixelsSize
   else
     old_pixel_size := sprite_entry.iPixelStarts[sprite_num + 1] * 4;
@@ -462,11 +470,7 @@ begin
   // Adjust offsets of following layout blocks
   layout_shift := layout_size - old_layout_size;
   for j := sprite_num + 1 to 39 do
-  begin
-    if ((j > max_used_sprite) and (j < 20)) or (j > (max_used_sprite + 20)) then
-      continue;
     sprite_entry.iLayoutStarts[j] := sprite_entry.iLayoutStarts[j] + layout_shift;
-  end;
   sprite_entry.iLayoutSize := sprite_entry.iLayoutSize + layout_shift;
   // Replace sprite block
   replace_data_block(sprite_entry.iOffset + sprite_entry.iLayoutSize + sprite_entry.iPixelStarts[sprite_num] * 4, old_pixel_size, pixel_size, pixel_data);
@@ -474,11 +478,7 @@ begin
   // Adjust offsets of following pixel blocks
   pixel_shift := pixel_size - old_pixel_size;
   for j := sprite_num + 1 to 39 do
-  begin
-    if ((j > max_used_sprite) and (j < 20)) or (j > (max_used_sprite + 20)) then
-      continue;
     sprite_entry.iPixelStarts[j] := sprite_entry.iPixelStarts[j] + pixel_shift div 4;
-  end;
   sprite_entry.iPixelsSize := sprite_entry.iPixelsSize + pixel_shift;
   // Shift all offsets for following sprite sets
   for j := sprite_set + 1 to num_sprite_entries - 1 do

@@ -77,6 +77,7 @@ type
     procedure lbxSpriteSetListClick(Sender: TObject);
     procedure SpriteImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure edSpriteNameChange(Sender: TObject);
     procedure cbShowNumbersClick(Sender: TObject);
     procedure btnBackgroundColorClick(Sender: TObject);
     procedure btnSaveChangesClick(Sender: TObject);
@@ -91,6 +92,7 @@ type
   private
     updating: boolean;
     modified: boolean;
+    last_max_used_sprite_num: integer;
 
   public
     procedure init_sprite_list;
@@ -103,6 +105,8 @@ var
   SpriteDialog: TSpriteDialog;
 
 implementation
+
+uses _settings, _map;
 
 {$R *.dfm}
 
@@ -141,7 +145,8 @@ begin
   updating := true;
   lbSpriteSetNum.Caption := 'Sprite set ' + inttostr(sprite_set);
   edSpriteName.Text := entry.cSpriteName;
-  lbSpriteNameCustom.Caption := Archive.get_monster_type_name(sprite_set);
+  if Settings.UseCustomMonsterNames = true then
+    lbSpriteNameCustom.Caption := Archive.get_monster_type_name(sprite_set);
   seSpriteWidth.Value := entry.iWidth4 * 4;
   seSpriteHeight.Value := entry.iHeight;
   seStandFrameFirst.Value := entry.iStandFrame;
@@ -169,9 +174,25 @@ begin
   Y := Y div 2;
   sprite_width := seSpriteWidth.Value;
   sprite_height := seSpriteHeight.Value;
-  if (Y >= (sprite_height * 2)) or (X >= sprite_width * (SpriteFile.get_used_sprite_count(lbxSpriteSetList.ItemIndex) + 1)) then
+  if (Y >= (sprite_height * 2)) or (X >= sprite_width * (SpriteFile.get_max_used_sprite_num(lbxSpriteSetList.ItemIndex) + 1)) then
     exit;
   seExpImpSpriteNum.Value := X div sprite_width + (Y div sprite_height) * 20;
+end;
+
+procedure TSpriteDialog.edSpriteNameChange(Sender: TObject);
+var
+  sprite_set: integer;
+  entry: ^TSpriteEntry;
+begin
+  sprite_set := lbxSpriteSetList.ItemIndex;
+  if (sprite_set = -1) or updating then
+    exit;
+  entry := Addr(SpriteFile.sprite_entries[sprite_set]);
+  StrPLCopy(entry.cSpriteName, edSpriteName.Text, High(entry.cSpriteName));
+  lbxSpriteSetList.Items[sprite_set] := inttostr(sprite_set) + ' - ' + entry.cSpriteName;
+  set_modified(true);
+  if Settings.UseCustomMonsterNames = false then
+    Map.leveldata_dirtyflag := Map.leveldata_dirtyflag + [ufMonsterTypes];
 end;
 
 procedure TSpriteDialog.cbShowNumbersClick(Sender: TObject);
@@ -197,7 +218,7 @@ end;
 procedure TSpriteDialog.btnUndoChangesClick(Sender: TObject);
 begin
   SpriteFile.load_from_archive;
-  lbxSpriteSetListClick(nil);
+  init_sprite_list;
   set_modified(false);
 end;
 
@@ -206,9 +227,9 @@ var
   sprite_set: integer;
   entry: ^TSpriteEntry;
 begin
-  if updating then
-    exit;
   sprite_set := lbxSpriteSetList.ItemIndex;
+  if (sprite_set = -1) or updating then
+    exit;
   entry := Addr(SpriteFile.sprite_entries[sprite_set]);
   entry.iWidth4 := strToIntDef(seSpriteWidth.Text, 0) div 4;
   entry.iHeight := strToIntDef(seSpriteHeight.Text, 0);
@@ -220,10 +241,11 @@ procedure TSpriteDialog.seSpriteSetPropertyChange(Sender: TObject);
 var
   sprite_set: integer;
   entry: ^TSpriteEntry;
+  new_max_used_sprite_num: integer;
 begin
-  if updating then
-    exit;
   sprite_set := lbxSpriteSetList.ItemIndex;
+  if (sprite_set = -1) or updating then
+    exit;
   entry := Addr(SpriteFile.sprite_entries[sprite_set]);
   entry.iStandFrame := strToIntDef(seStandFrameFirst.Text, 0);
   entry.iStandFrame2 := strToIntDef(seStandFrameLast.Text, 0);
@@ -238,6 +260,9 @@ begin
   entry.iProjectileY := strToIntDef(seProjectileYOff.Text, 0);
   entry.iProjectileFrame := strToIntDef(seProjectileFrameFirst.Text, 0);
   entry.iProjectileF2 := strToIntDef(seProjectileFrameLast.Text, 0);
+  new_max_used_sprite_num := SpriteFile.get_max_used_sprite_num(sprite_set);
+  if last_max_used_sprite_num <> new_max_used_sprite_num then
+    render_all_sprites;
   set_modified(true);
 end;
 
@@ -264,6 +289,8 @@ var
   palette_num: integer;
 begin
   sprite_set := lbxSpriteSetList.ItemIndex;
+  if (sprite_set = -1) then
+    exit;
   entry := Addr(SpriteFile.sprite_entries[sprite_set]);
   width := entry.iWidth4 * 4;
   height := entry.iHeight;
@@ -280,7 +307,7 @@ begin
     output_filename := save_dialog.FileName
   else
     exit;
-  max_used_sprite := SpriteFile.get_used_sprite_count(sprite_set);
+  max_used_sprite := SpriteFile.get_max_used_sprite_num(sprite_set);
   output_buffer := TBitmap.Create;
   output_buffer.PixelFormat := pf8bit;
   output_buffer.Width := IfThen(rbExpImpAllOneFile.Checked, width * (max_used_sprite + 1), width);
@@ -348,11 +375,13 @@ var
   width, height: integer;
   i: integer;
 begin
+  sprite_set := lbxSpriteSetList.ItemIndex;
+  if (sprite_set = -1) then
+    exit;
   if ImportDialog.Execute then
     input_filename := ImportDialog.FileName
   else
     exit;
-  sprite_set := lbxSpriteSetList.ItemIndex;
   sprite_num := seExpImpSpriteNum.Value;
   input_buffer := TBitmap.Create;
   // Import single sprite
@@ -406,8 +435,13 @@ begin
 end;
 
 procedure TSpriteDialog.btnEraseSpriteClick(Sender: TObject);
+var
+  sprite_set: integer;
 begin
-  SpriteFile.erase_sprite(lbxSpriteSetList.ItemIndex, seExpImpSpriteNum.Value);
+  sprite_set := lbxSpriteSetList.ItemIndex;
+  if (sprite_set = -1) then
+    exit;
+  SpriteFile.erase_sprite(sprite_set, seExpImpSpriteNum.Value);
   set_modified(true);
   render_all_sprites;
 end;
@@ -446,7 +480,8 @@ begin
   entry := Addr(SpriteFile.sprite_entries[sprite_set]);
   width := entry.iWidth4 * 4;
   height := entry.iHeight;
-  max_used_sprite := SpriteFile.get_used_sprite_count(sprite_set);
+  max_used_sprite := SpriteFile.get_max_used_sprite_num(sprite_set);
+  last_max_used_sprite_num := max_used_sprite;
   SpriteImage.Canvas.Pen.Style := psClear;
   SpriteImage.Canvas.Brush.Color := ColorDialog.Color;
   SpriteImage.Canvas.Rectangle(0,0,SpriteImage.Width+1,SpriteImage.Height+1);
