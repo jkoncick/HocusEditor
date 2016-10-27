@@ -64,6 +64,7 @@ type
     tileset_config_filename: String;
     tileimage: TBitmap;
     current_tileset: integer;
+    num_tiles: integer;
 
     // Tileset configuration
     // First index = pattern/block presets, Second index = background/foreground presets

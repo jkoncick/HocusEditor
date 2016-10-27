@@ -145,7 +145,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     Left = 8
     Top = 232
     Width = 617
-    Height = 185
+    Height = 177
     Caption = ' Animation settings '
     TabOrder = 1
     object lbAnimType: TLabel
@@ -157,7 +157,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object imgAnimAnimatedTiles: TImage
       Left = 144
-      Top = 136
+      Top = 128
       Width = 256
       Height = 32
     end
@@ -280,7 +280,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
       Left = 8
       Top = 24
       Width = 121
-      Height = 153
+      Height = 145
       ItemHeight = 13
       TabOrder = 0
       OnClick = lstAnimationListClick
@@ -339,72 +339,91 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
   end
   object gbMonsterSettings: TGroupBox
     Left = 8
-    Top = 424
+    Top = 416
     Width = 617
-    Height = 185
+    Height = 193
     Caption = ' Monster settings '
     TabOrder = 2
     object lbMonsterSpriteSet: TLabel
       Left = 144
-      Top = 28
+      Top = 20
       Width = 47
       Height = 13
       Caption = 'Sprite set:'
     end
     object lbMonsterHealth: TLabel
       Left = 144
-      Top = 60
+      Top = 50
       Width = 34
       Height = 13
       Caption = 'Health:'
     end
     object lbMonsterProjectileHSpeed: TLabel
       Left = 144
-      Top = 92
+      Top = 80
       Width = 126
       Height = 13
       Caption = 'Projectile horizontal speed:'
     end
     object lbMonsterProjectileVSpeed: TLabel
       Left = 144
-      Top = 124
+      Top = 110
       Width = 115
       Height = 13
       Caption = 'Projectile vertical speed:'
     end
     object lbMonsterProjectileOffset: TLabel
       Left = 144
-      Top = 156
-      Width = 110
+      Top = 140
+      Width = 85
       Height = 13
-      Caption = 'Projectile source offset:'
+      Hint = 'For vertical projectiles only'
+      Caption = 'Projectile X-offset:'
+      ParentShowHint = False
+      ShowHint = True
     end
     object lbMonsterHealthInfo1: TLabel
       Left = 288
-      Top = 60
+      Top = 50
       Width = 59
       Height = 13
+      Hint = 'BOSS = Show health bar, kill on touch'
       Caption = '20+ = BOSS'
+      ParentShowHint = False
+      ShowHint = True
     end
     object lbMonsterBehavior: TLabel
       Left = 376
-      Top = 156
+      Top = 20
       Width = 45
       Height = 13
       Caption = 'Behavior:'
+    end
+    object lbMonsterPixelData: TLabel
+      Left = 376
+      Top = 168
+      Width = 86
+      Height = 13
+      Caption = 'Pixel data: 0 bytes'
+    end
+    object imgSpriteImage: TImage
+      Left = 504
+      Top = 72
+      Width = 104
+      Height = 80
     end
     object lstMonsterList: TListBox
       Left = 8
       Top = 24
       Width = 121
-      Height = 153
+      Height = 161
       ItemHeight = 13
       TabOrder = 0
       OnClick = lstMonsterListClick
     end
     object cbxMonsterSpriteSet: TComboBox
       Left = 200
-      Top = 24
+      Top = 16
       Width = 161
       Height = 21
       Style = csDropDownList
@@ -414,7 +433,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object seMonsterHealth: TSpinEdit
       Left = 200
-      Top = 56
+      Top = 46
       Width = 73
       Height = 22
       MaxValue = 65535
@@ -425,7 +444,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object seMonsterProjectileHSpeed: TSpinEdit
       Left = 288
-      Top = 88
+      Top = 76
       Width = 73
       Height = 22
       MaxValue = 65535
@@ -436,7 +455,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object seMonsterProjectileVSpeed: TSpinEdit
       Left = 288
-      Top = 120
+      Top = 106
       Width = 73
       Height = 22
       MaxValue = 65535
@@ -447,16 +466,21 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object cbMonsterTargetPlayer: TCheckBox
       Left = 376
-      Top = 48
-      Width = 225
+      Top = 70
+      Width = 89
       Height = 17
-      Caption = 'Projectiles are targeting player'
+      Hint = 
+        'Projectiles are targeting player, flying monsters fly towards pl' +
+        'ayer'
+      Caption = 'Target player'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 5
       OnClick = MonsterPropertyChange
     end
     object cbMonsterShootProjectiles: TCheckBox
       Left = 376
-      Top = 24
+      Top = 46
       Width = 145
       Height = 17
       Caption = 'Monster fires projectiles'
@@ -465,17 +489,17 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object cbMonsterWobblyProjectiles: TCheckBox
       Left = 376
-      Top = 72
-      Width = 185
+      Top = 94
+      Width = 121
       Height = 17
-      Caption = 'Projectiles have wobbly motion'
+      Caption = 'Wobbly projectiles'
       TabOrder = 7
       OnClick = MonsterPropertyChange
     end
     object cbxMonsterBehavior: TComboBox
       Left = 432
-      Top = 152
-      Width = 169
+      Top = 16
+      Width = 177
       Height = 21
       Style = csDropDownList
       ItemHeight = 13
@@ -497,7 +521,7 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object seMonsterProjectileOffset: TSpinEdit
       Left = 288
-      Top = 152
+      Top = 136
       Width = 73
       Height = 22
       MaxValue = 65535
@@ -508,8 +532,8 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object cbMonsterUnknown2: TCheckBox
       Left = 376
-      Top = 96
-      Width = 153
+      Top = 118
+      Width = 89
       Height = 17
       Caption = 'Unknown 1'
       TabOrder = 10
@@ -517,26 +541,35 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
     end
     object cbMonsterUnknown3: TCheckBox
       Left = 376
-      Top = 120
-      Width = 153
+      Top = 142
+      Width = 97
       Height = 17
       Caption = 'Unknown 2'
       TabOrder = 11
       OnClick = MonsterPropertyChange
     end
     object btnClearMonster: TButton
-      Left = 528
-      Top = 12
-      Width = 81
-      Height = 25
+      Left = 144
+      Top = 164
+      Width = 97
+      Height = 22
       Caption = 'Clear monster'
       TabOrder = 12
       OnClick = btnClearMonsterClick
     end
+    object btnVRAMUsage: TButton
+      Left = 512
+      Top = 164
+      Width = 97
+      Height = 22
+      Caption = 'VRAM Usage...'
+      TabOrder = 13
+      OnClick = btnVRAMUsageClick
+    end
   end
   object pnTilesetImage: TPanel
     Left = 144
-    Top = 232
+    Top = 224
     Width = 329
     Height = 209
     TabOrder = 3
@@ -547,6 +580,36 @@ object LevelPropertiesDialog: TLevelPropertiesDialog
       Width = 320
       Height = 200
       OnMouseDown = imgTilesetImageMouseDown
+    end
+  end
+  object pnVRAMUsage: TPanel
+    Left = 376
+    Top = 224
+    Width = 249
+    Height = 384
+    TabOrder = 4
+    Visible = False
+    object vlVRAMUsage: TValueListEditor
+      Left = 4
+      Top = 4
+      Width = 241
+      Height = 349
+      TabOrder = 0
+      TitleCaptions.Strings = (
+        'Attribute'
+        'Value')
+      ColWidths = (
+        141
+        94)
+    end
+    object btnVRAMUsageClose: TButton
+      Left = 88
+      Top = 356
+      Width = 72
+      Height = 22
+      Caption = 'Close'
+      TabOrder = 1
+      OnClick = btnVRAMUsageCloseClick
     end
   end
 end

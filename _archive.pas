@@ -19,6 +19,7 @@ type
 
   public
     // Configuration variables
+    vram_size: integer;
     palette_file_index: integer;
     first_level_file_index: integer;
     first_tileset_file_index: integer;
@@ -63,7 +64,7 @@ type
     procedure import_file(file_index: integer; filename: String);
 
     procedure load_palette(file_index, palette_index: integer);
-    procedure load_pcx_image(target: TBitmap; file_index: integer);
+    procedure load_pcx_image(target: TBitmap; file_index: integer; is_tileset: boolean);
     procedure load_tileset_image(target: TBitmap; index: integer);
     procedure load_level_data(mem: Pointer; level_num, subfile_num: integer);
     procedure save_level_data(mem: Pointer; level_num, subfile_num: integer);
@@ -81,7 +82,7 @@ implementation
 
 { TArchive }
 
-uses SysUtils, Classes, IniFiles, _settings, _map, main, _spritefile;
+uses SysUtils, Classes, IniFiles, _settings, _map, main, _spritefile, _tileset;
 
 procedure TArchive.init;
 var
@@ -167,6 +168,7 @@ begin
   ini := TMemIniFile.Create(filename);
   tmp_strings := TStringList.Create;
   // Load basic information
+  vram_size := ini.ReadInteger('Basic', 'VRAM_Size', 72504);
   palette_file_index := ini.ReadInteger('File_Positions', 'Palette_File', 7);
   first_level_file_index := ini.ReadInteger('File_Positions', 'First_Level_File', 131);
   first_tileset_file_index := ini.ReadInteger('File_Positions', 'First_Tileset_File', 105);
@@ -357,12 +359,14 @@ begin
   SpriteFile.update_palette(palette_index);
 end;
 
-procedure TArchive.load_pcx_image(target: TBitmap; file_index: integer);
+procedure TArchive.load_pcx_image(target: TBitmap; file_index: integer; is_tileset: boolean);
 var
   file_entry: ^TFileEntry;
   buffer: array of byte;
   tmp_bitmap: array[0..63999] of Cardinal;
   srcpos, targpos: Cardinal;
+  num_tiles: integer;
+  x, y: integer;
   b, color: byte;
   j, count: integer;
 begin
@@ -374,6 +378,9 @@ begin
   load_data(buffer, file_entry.offset, file_entry.size);
   targpos := 0;
   srcpos := $80;
+  num_tiles := -1;
+  x := 0;
+  y := 0;
   while srcpos < file_entry.size do
   begin
     b := buffer[srcpos];
@@ -391,10 +398,21 @@ begin
     begin
       tmp_bitmap[targpos] := palette[color];
       Inc(targpos);
+      // Detection of number of tiles (tile consisting of palette index 255)
+      if ((x and 15) = 0) and ((y and 15) = 0) and (color = 255) and (num_tiles = -1) then
+        num_tiles := (x div 16) + (y div 16) * 20;
+      Inc(x);
+      if x = 320 then
+      begin
+        x := 0;
+        Inc(y);
+      end;
       if targpos = 64000 then
       begin
         SetBitmapBits(target.Handle, sizeof(tmp_bitmap), Addr(tmp_bitmap));
         target.Modified := true;
+        if is_tileset then
+          Tileset.num_tiles := num_tiles;
         exit;
       end;
     end;
@@ -404,7 +422,7 @@ end;
 
 procedure TArchive.load_tileset_image(target: TBitmap; index: integer);
 begin
-  load_pcx_image(target, first_tileset_file_index + index);
+  load_pcx_image(target, first_tileset_file_index + index, true);
 end;
 
 procedure TArchive.load_level_data(mem: Pointer; level_num, subfile_num: integer);
@@ -425,13 +443,10 @@ end;
 
 function TArchive.get_monster_type_name(sprite_set: word): string;
 begin
-  if Settings.UseCustomMonsterNames = false then
-  begin
-    result := SpriteFile.sprite_entries[sprite_set].cSpriteName;
-    exit;
-  end;
-  if (sprite_set >= Length(Archive.monster_type_names)) or (monster_type_names[sprite_set] = '') then
+  if (sprite_set >= SpriteFile.num_sprite_entries) then
     result := 'Sprite set ' + inttostr(sprite_set)
+  else if (Settings.UseCustomMonsterNames = false) or (monster_type_names[sprite_set] = '') then
+    result := SpriteFile.sprite_entries[sprite_set].cSpriteName
   else
     result := monster_type_names[sprite_set];
 end;

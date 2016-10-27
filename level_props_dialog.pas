@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ExtCtrls, Math;
+  Dialogs, StdCtrls, Spin, ExtCtrls, Math, Grids, ValEdit;
 
 type
   TLevelPropertiesDialog = class(TForm)
@@ -71,6 +71,12 @@ type
     lbLevelElevatorLeft: TLabel;
     imgLevelElevatorRight: TImage;
     lbLevelElevatorRight: TLabel;
+    lbMonsterPixelData: TLabel;
+    btnVRAMUsage: TButton;
+    imgSpriteImage: TImage;
+    pnVRAMUsage: TPanel;
+    vlVRAMUsage: TValueListEditor;
+    btnVRAMUsageClose: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -87,6 +93,8 @@ type
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure imgTilesetImageMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure btnVRAMUsageClick(Sender: TObject);
+    procedure btnVRAMUsageCloseClick(Sender: TObject);
   private
     updating: boolean;
     editing_tile: integer;
@@ -99,6 +107,7 @@ type
     procedure update_animation_defined_tiles;
     procedure update_animation_entry;
     procedure update_monster_type;
+    procedure compute_vram_usage;
   end;
 
 const anim_type_mark: array[0..3] of char = ('-', 'A', 'R', '*');
@@ -108,7 +117,7 @@ var
 
 implementation
 
-uses _archive, _map, _tileset, sprite_dialog;
+uses _archive, _map, _tileset, _spritefile, sprite_dialog;
 
 {$R *.dfm}
 
@@ -179,8 +188,15 @@ begin
   m := Addr(Map.leveldata.monster_info[lstMonsterList.ItemIndex]);
   ss := cbxMonsterSpriteSet.ItemIndex;
   if m.SpriteSet <> ss then
+  begin
+    m.SpriteSet := ss;
     lstMonsterList.Items[lstMonsterList.ItemIndex] := inttostr(lstMonsterList.ItemIndex) + ' - ' + Archive.get_monster_type_name(ss);
-  m.SpriteSet := ss;
+    lbMonsterPixelData.Caption := 'Pixel data: ' + inttostr(SpriteFile.sprite_entries[ss].iPixelsSize) + ' bytes';
+    imgSpriteImage.Visible := true;
+    imgSpriteImage.Picture.Bitmap.Assign(SpriteFile.load_sprite(ss, 0, 0));
+    if pnVRAMUsage.Visible then
+      compute_vram_usage;
+  end;
   m.Health := strtointdef(seMonsterHealth.Text, 0);
   m.ProjectileHSpeed := strtointdef(seMonsterProjectileHSpeed.Text, 0);
   m.ProjectileVSpeed := strtointdef(seMonsterProjectileVSpeed.Text, 0);
@@ -273,6 +289,38 @@ begin
   else
     e.elevator_tile_right := -1;
   update_level_properties;
+end;
+
+procedure TLevelPropertiesDialog.imgTilesetImageMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  a: ^TLvlAnimationInfo;
+  b: ^TLevelExeData;
+  tile_index: byte;
+begin
+  a := Addr(Map.leveldata.animation_info);
+  b := Addr(Map.levelexedata);
+  tile_index := (X div 16) + (Y div 16) * tileset_cols;
+  case editing_tile of
+    0: a.BackgroundTile := tile_index;
+    1: a.SwitchDownTile := tile_index;
+    2: a.SwitchUpTile := tile_index;
+    3: a.ShootableTile := tile_index;
+    4: b.elevator_tile_left := tile_index;
+    5: b.elevator_tile_right := tile_index;
+  end;
+  pnTilesetImage.Visible := false;
+  update_contents;
+end;
+
+procedure TLevelPropertiesDialog.btnVRAMUsageClick(Sender: TObject);
+begin
+  pnVRAMUsage.Visible := true;
+  compute_vram_usage;
+end;
+
+procedure TLevelPropertiesDialog.btnVRAMUsageCloseClick(Sender: TObject);
+begin
+  pnVRAMUsage.Visible := false;
 end;
 
 procedure TLevelPropertiesDialog.update_contents;
@@ -375,7 +423,7 @@ begin
     exit;
   last_backdrop_image := index;
   Archive.load_palette(Archive.first_backdrop_palette_file_index + index, 1);
-  Archive.load_pcx_image(imgBackdropImage.Picture.Bitmap, Archive.first_backdrop_file_index + index);
+  Archive.load_pcx_image(imgBackdropImage.Picture.Bitmap, Archive.first_backdrop_file_index + index, false);
   // Upper palette was changed, need to re-render all sprites showed on sprite dialog
   SpriteDialog.render_all_sprites;
 end;
@@ -437,13 +485,22 @@ end;
 procedure TLevelPropertiesDialog.update_monster_type;
 var
   monster_info: ^TLvlMonsterInfo;
+  pixel_data: integer;
 begin
   updating := true;
   monster_info := Addr(Map.leveldata.monster_info[lstMonsterList.ItemIndex]);
   if monster_info.SpriteSet = 65535 then
-    cbxMonsterSpriteSet.ItemIndex := -1
-  else
+  begin
+    cbxMonsterSpriteSet.ItemIndex := -1;
+    pixel_data := 0;
+    imgSpriteImage.Visible := false;
+  end else
+  begin
     cbxMonsterSpriteSet.ItemIndex := monster_info.SpriteSet;
+    pixel_data := SpriteFile.sprite_entries[monster_info.SpriteSet].iPixelsSize;
+    imgSpriteImage.Visible := true;
+    imgSpriteImage.Picture.Bitmap.Assign(SpriteFile.load_sprite(monster_info.SpriteSet, 0, 0));
+  end;
   seMonsterHealth.Value := monster_info.Health;
   seMonsterProjectileHSpeed.Value := monster_info.ProjectileHSpeed;
   seMonsterProjectileVSpeed.Value := monster_info.ProjectileVSpeed;
@@ -454,28 +511,49 @@ begin
   cbMonsterWobblyProjectiles.Checked := monster_info.WobblyProjectiles = 1;
   cbMonsterUnknown2.Checked := monster_info.Unknown2 = 1;
   cbMonsterUnknown3.Checked := monster_info.Unknown3 = 1;
+  lbMonsterPixelData.Caption := 'Pixel data: ' + inttostr(pixel_data) + ' bytes';
+  if pnVRAMUsage.Visible then
+    compute_vram_usage;
   updating := false;
 end;
 
-procedure TLevelPropertiesDialog.imgTilesetImageMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TLevelPropertiesDialog.compute_vram_usage;
 var
-  a: ^TLvlAnimationInfo;
-  b: ^TLevelExeData;
-  tile_index: byte;
+  str: TStringList;
+  sprite_set: word;
+  used_vram: integer;
+  i: integer;
 begin
-  a := Addr(Map.leveldata.animation_info);
-  b := Addr(Map.levelexedata);
-  tile_index := (X div 16) + (Y div 16) * tileset_cols;
-  case editing_tile of
-    0: a.BackgroundTile := tile_index;
-    1: a.SwitchDownTile := tile_index;
-    2: a.SwitchUpTile := tile_index;
-    3: a.ShootableTile := tile_index;
-    4: b.elevator_tile_left := tile_index;
-    5: b.elevator_tile_right := tile_index;
+  if not Map.loaded then
+    exit;
+  used_vram := 0;
+  str := TStringList.Create;
+  str.Add('Available VRAM size=' + inttostr(Archive.vram_size) + ' bytes');
+  str.Add('Tiles in tileset=' + inttostr(Tileset.num_tiles));
+  str.Add('VRAM used by tileset=' + inttostr(Tileset.num_tiles * 256) + ' bytes');
+  Inc(used_vram, Tileset.num_tiles * 256);
+  str.Add('');
+  str.Add(Archive.get_monster_type_name(0) + ' (autoload)=' + inttostr(SpriteFile.sprite_entries[0].iPixelsSize) + ' bytes');
+  Inc(used_vram, SpriteFile.sprite_entries[0].iPixelsSize);
+  str.Add(Archive.get_monster_type_name(1) + ' (autoload)=' + inttostr(SpriteFile.sprite_entries[1].iPixelsSize) + ' bytes');
+  Inc(used_vram, SpriteFile.sprite_entries[1].iPixelsSize);
+  str.Add(Archive.get_monster_type_name(2) + ' (autoload)=' + inttostr(SpriteFile.sprite_entries[2].iPixelsSize) + ' bytes');
+  Inc(used_vram, SpriteFile.sprite_entries[2].iPixelsSize);
+  str.Add(Archive.get_monster_type_name(3) + ' (autoload)=' + inttostr(SpriteFile.sprite_entries[3].iPixelsSize) + ' bytes');
+  Inc(used_vram, SpriteFile.sprite_entries[3].iPixelsSize);
+  for i := 0 to Length(Map.leveldata.monster_info) - 1 do
+  begin
+    sprite_set := Map.leveldata.monster_info[i].SpriteSet;
+    if sprite_set = 65535 then
+      continue;
+    str.Add(Archive.get_monster_type_name(sprite_set) + '=' + inttostr(SpriteFile.sprite_entries[sprite_set].iPixelsSize) + ' bytes');
+    Inc(used_vram, SpriteFile.sprite_entries[sprite_set].iPixelsSize);
   end;
-  pnTilesetImage.Visible := false;
-  update_contents;
+  str.Add('');
+  str.Add('Total VRAM usage=' + inttostr(used_vram) + ' bytes');
+  str.Add('Free VRAM size=' + inttostr(Archive.vram_size - used_vram) + ' bytes');
+  vlVRAMUsage.Strings := str;
+  str.Destroy;
 end;
 
 end.
