@@ -15,9 +15,10 @@ uses
   _exefile in '_exefile.pas',
   _spritefile in '_spritefile.pas',
   sprite_dialog in 'sprite_dialog.pas' {SpriteDialog},
-  pngimage in 'pngdelphi/pngimage.pas',
-  zlibpas in 'pngdelphi/zlibpas.pas',
-  pnglang in 'pngdelphi/pnglang.pas';
+  misc_graphics_dialog in 'misc_graphics_dialog.pas' {MiscGraphicsDialog},
+  pngimage in 'pngdelphi\pngimage.pas',
+  zlibpas in 'pngdelphi\zlibpas.pas',
+  pnglang in 'pngdelphi\pnglang.pas';
 
 {$R *.res}
 
@@ -36,6 +37,7 @@ begin
   Application.CreateForm(TBlockPresetDialog, BlockPresetDialog);
   Application.CreateForm(TLevelPropertiesDialog, LevelPropertiesDialog);
   Application.CreateForm(TSpriteDialog, SpriteDialog);
+  Application.CreateForm(TMiscGraphicsDialog, MiscGraphicsDialog);
   // All GUI settings must be loaded after all dialogs are created.
   Settings.load_postcreate_editor_settings;
   // Initialize set_dialog

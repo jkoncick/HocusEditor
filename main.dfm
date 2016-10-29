@@ -1056,6 +1056,10 @@ object MainWindow: TMainWindow
         ShortCut = 122
         OnClick = Sprites1Click
       end
+      object Miscgraphics1: TMenuItem
+        Caption = 'Graphics...'
+        OnClick = Miscgraphics1Click
+      end
     end
     object Edit1: TMenuItem
       Caption = 'Edit'

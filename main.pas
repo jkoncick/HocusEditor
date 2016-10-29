@@ -8,7 +8,7 @@ uses
   Dialogs, ExtCtrls, ComCtrls, Menus, StdCtrls, XPMan, Math, Spin, Buttons,
   ShellApi, IniFiles, Clipbrd, CheckLst,
   // Dialogs
-  set_dialog, block_preset_dialog, level_props_dialog, sprite_dialog,
+  set_dialog, block_preset_dialog, level_props_dialog, sprite_dialog, misc_graphics_dialog,
   // Units
   _renderer, _map, _tileset, _settings, _archive, _savegame, _spritefile,
   // External libraries
@@ -175,6 +175,7 @@ type
     N11: TMenuItem;
     Sprites1: TMenuItem;
     sbDrawSprites: TSpeedButton;
+    Miscgraphics1: TMenuItem;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -204,6 +205,7 @@ type
     procedure Exportfile1Click(Sender: TObject);
     procedure Importfile1Click(Sender: TObject);
     procedure Sprites1Click(Sender: TObject);
+    procedure Miscgraphics1Click(Sender: TObject);
     procedure Undo1Click(Sender: TObject);
     procedure Redo1Click(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
@@ -961,6 +963,11 @@ end;
 procedure TMainWindow.Sprites1Click(Sender: TObject);
 begin
   SpriteDialog.Show;
+end;
+
+procedure TMainWindow.Miscgraphics1Click(Sender: TObject);
+begin
+  MiscGraphicsDialog.Show;
 end;
 
 procedure TMainWindow.Undo1Click(Sender: TObject);
