@@ -10,7 +10,7 @@ uses
   // Dialogs
   set_dialog, block_preset_dialog, level_props_dialog, sprite_dialog, misc_graphics_dialog,
   // Units
-  _renderer, _map, _tileset, _settings, _archive, _savegame, _spritefile,
+  _renderer, _map, _tileset, _settings, _archive, _exefile, _savegame, _spritefile,
   // External libraries
   pngimage;
 
@@ -47,7 +47,6 @@ type
     Reopenmap1: TMenuItem;
     N1: TMenuItem;
     Savemapas1: TMenuItem;
-    N2: TMenuItem;
     Exit1: TMenuItem;
     Selectnext1: TMenuItem;
     N3: TMenuItem;
@@ -164,7 +163,7 @@ type
     Easy1: TMenuItem;
     Moderate1: TMenuItem;
     Hard1: TMenuItem;
-    Archive1: TMenuItem;
+    Tools1: TMenuItem;
     Exportfile1: TMenuItem;
     Importfile1: TMenuItem;
     FileImportDialog: TOpenDialog;
@@ -176,6 +175,12 @@ type
     Sprites1: TMenuItem;
     sbDrawSprites: TSpeedButton;
     Miscgraphics1: TMenuItem;
+    N12: TMenuItem;
+    Createexepatch1: TMenuItem;
+    Applyexepatch1: TMenuItem;
+    OriginalExeOpenDialog: TOpenDialog;
+    ExePatchSaveDialog: TSaveDialog;
+    ExePatchOpenDialog: TOpenDialog;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -200,6 +205,8 @@ type
     procedure Savemapas1Click(Sender: TObject);
     procedure Exportmap1Click(Sender: TObject);
     procedure Savemapimage1Click(Sender: TObject);
+    procedure Createexepatch1Click(Sender: TObject);
+    procedure Applyexepatch1Click(Sender: TObject);
     procedure Applymodpatch1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure Exportfile1Click(Sender: TObject);
@@ -864,10 +871,11 @@ begin
     if Application.MessageBox('You are about to apply a mod patch to your game.'#13'Remember to backup your game files (HOCUS.EXE and HOCUS.DAT).'#13#13'Continue?', 'Apply mod patch', MB_ICONQUESTION or MB_YESNO) = IDNO then
       exit;
     Archive.apply_mod_patch(ModPatchDialog.FileName);
-    Application.MessageBox('Mod patch was applied.', 'Apply mod patch', MB_ICONINFORMATION or MB_OK);
+    Application.MessageBox('Mod patch was applied.'#13#13'The program will now close.', 'Apply mod patch', MB_ICONINFORMATION or MB_OK);
     // Restart the application because it ends in inconsistent state after importing levels
+    OnClose := nil;
+    OnResize := nil;
     Close;
-    ShellExecute(Handle, nil, PChar(Application.ExeName), nil, nil, SW_SHOWNORMAL);
   end;
 end;
 
@@ -968,6 +976,31 @@ end;
 procedure TMainWindow.Miscgraphics1Click(Sender: TObject);
 begin
   MiscGraphicsDialog.Show;
+end;
+
+procedure TMainWindow.Createexepatch1Click(Sender: TObject);
+var
+  original_exe_filename: String;
+  patch_filename: String;
+begin
+  if not OriginalExeOpenDialog.Execute then
+    exit;
+  original_exe_filename := OriginalExeOpenDialog.FileName;
+  if not ExePatchSaveDialog.Execute then
+    exit;
+  patch_filename := ExePatchSaveDialog.FileName;
+  ExeFile.create_exe_patch(original_exe_filename, patch_filename);
+end;
+
+procedure TMainWindow.Applyexepatch1Click(Sender: TObject);
+var
+  patch_filename: String;
+begin
+  if not ExePatchOpenDialog.Execute then
+    exit;
+  patch_filename := ExePatchOpenDialog.FileName;
+  if ExeFile.apply_exe_patch(patch_filename) then
+    Application.MessageBox('Patch was applied.', 'Apply exe patch', MB_OK or MB_ICONINFORMATION);
 end;
 
 procedure TMainWindow.Undo1Click(Sender: TObject);
@@ -2399,8 +2432,6 @@ begin
   StatusBar.Panels[3].Text := inttostr(Map.width)+' x '+inttostr(Map.height);
   set_window_titles(ExtractFileName(filename));
   LevelPropertiesDialog.update_contents;
-  // Initialize settings
-  Settings.get_file_paths_from_map_filename;
   // Rendering
   resize_map_canvas;
   render_minimap;

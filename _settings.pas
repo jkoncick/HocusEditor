@@ -21,6 +21,8 @@ type
     TestMapDifficulty: integer;
     LoadCustomImageWarn: boolean;
     DosboxParameters: String;
+    ExePatchContextSize: integer;
+    ExePatchLookDistance: integer;
 
     // File paths
     GameFolder: String;
@@ -33,7 +35,6 @@ type
     procedure load_precreate_editor_settings;
     procedure load_postcreate_editor_settings;
     procedure save_editor_settings;
-    procedure get_file_paths_from_map_filename;
 
   end;
 
@@ -63,6 +64,8 @@ begin
   TestMapDifficulty := ini.ReadInteger('Preferences', 'TestMapDifficulty', 1);
   LoadCustomImageWarn := ini.ReadBool('Preferences', 'LoadCustomImageWarn', true);
   DosboxParameters := ini.ReadString('Preferences','DosboxParameters', '');
+  ExePatchContextSize := ini.ReadInteger('Preferences','ExePatchContextSize', 3);
+  ExePatchLookDistance := ini.ReadInteger('Preferences','ExePatchLookDistance', 4096);
   // Load file paths
   GameFolder := ini.ReadString('Paths','GameFolder', current_dir);
   if GameFolder[Length(GameFolder)] <> '\' then
@@ -119,6 +122,8 @@ begin
   ini.WriteInteger('Preferences', 'TestMapDifficulty', TestMapDifficulty);
   ini.WriteBool('Preferences', 'LoadCustomImageWarn', LoadCustomImageWarn);
   ini.WriteString('Preferences','DosboxParameters',DosboxParameters);
+  ini.WriteInteger('Preferences','ExePatchContextSize',ExePatchContextSize);
+  ini.WriteInteger('Preferences','ExePatchLookDistance',ExePatchLookDistance);
   // Save file paths
   ini.WriteString('Paths','GameFolder',GameFolder);
   ini.WriteString('Paths','DosboxPath',DosboxPath);
@@ -139,16 +144,6 @@ begin
   ini.WriteInteger('GUI','SpriteDialog.Top',SpriteDialog.Top);
   ini.UpdateFile;
   ini.Destroy;
-end;
-
-procedure TSettings.get_file_paths_from_map_filename;
-begin
-  // Get Game path and game executable from map filename
-  {if (GameExecutable = '') or (not FileExists(GameExecutable)) then
-  begin
-    GamePath := ExtractFilePath(ExcludeTrailingPathDelimiter(ExtractFilePath(Map.filename)));
-    GameExecutable := GamePath + 'HOCUS.EXE';
-  end;}
 end;
 
 end.

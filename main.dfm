@@ -1024,20 +1024,13 @@ object MainWindow: TMainWindow
       object N9: TMenuItem
         Caption = '-'
       end
-      object Applymodpatch1: TMenuItem
-        Caption = 'Apply mod patch'
-        OnClick = Applymodpatch1Click
-      end
-      object N2: TMenuItem
-        Caption = '-'
-      end
       object Exit1: TMenuItem
         Caption = 'Exit'
         OnClick = Exit1Click
       end
     end
-    object Archive1: TMenuItem
-      Caption = 'Archive'
+    object Tools1: TMenuItem
+      Caption = 'Tools'
       object Exportfile1: TMenuItem
         Caption = 'Export file'
         ShortCut = 120
@@ -1059,6 +1052,21 @@ object MainWindow: TMainWindow
       object Miscgraphics1: TMenuItem
         Caption = 'Graphics...'
         OnClick = Miscgraphics1Click
+      end
+      object N12: TMenuItem
+        Caption = '-'
+      end
+      object Createexepatch1: TMenuItem
+        Caption = 'Create exe patch'
+        OnClick = Createexepatch1Click
+      end
+      object Applyexepatch1: TMenuItem
+        Caption = 'Apply exe patch'
+        OnClick = Applyexepatch1Click
+      end
+      object Applymodpatch1: TMenuItem
+        Caption = 'Apply mod patch'
+        OnClick = Applymodpatch1Click
       end
     end
     object Edit1: TMenuItem
@@ -1236,5 +1244,27 @@ object MainWindow: TMainWindow
     Title = 'Apply mod patch'
     Left = 96
     Top = 32
+  end
+  object OriginalExeOpenDialog: TOpenDialog
+    DefaultExt = 'exe'
+    Filter = 'The original unmodified HOCUS.EXE|*.exe'
+    Title = 'Select the original unmodified executable'
+    Left = 32
+    Top = 64
+  end
+  object ExePatchSaveDialog: TSaveDialog
+    DefaultExt = 'pat'
+    FileName = 'hocus.pat'
+    Filter = 'Hocus Pocus exe patch (*.pat)|*.pat'
+    Title = 'Save exe patch'
+    Left = 64
+    Top = 64
+  end
+  object ExePatchOpenDialog: TOpenDialog
+    DefaultExt = 'pat'
+    Filter = 'Hocus Pocus exe patch (*.pat)|*.pat'
+    Title = 'Apply exe patch'
+    Left = 96
+    Top = 64
   end
 end
