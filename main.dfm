@@ -100,7 +100,7 @@ object MainWindow: TMainWindow
         Width = 100
       end
       item
-        Text = 'v1.1'
+        Text = 'v1.2'
         Width = 0
       end>
   end
@@ -1064,6 +1064,9 @@ object MainWindow: TMainWindow
         Caption = 'Apply exe patch'
         OnClick = Applyexepatch1Click
       end
+      object N2: TMenuItem
+        Caption = '-'
+      end
       object Applymodpatch1: TMenuItem
         Caption = 'Apply mod patch'
         OnClick = Applymodpatch1Click
@@ -1206,7 +1209,7 @@ object MainWindow: TMainWindow
   end
   object TilesetOpenDialog: TOpenDialog
     DefaultExt = 'bmp'
-    Filter = 'Tileset image (*.bmp)|*.bmp'
+    Filter = 'Tileset image (*.bmp, *.png)|*.bmp;*.png'
     InitialDir = '.\tilesets'
     Title = 'Load Tileset image'
     Left = 96

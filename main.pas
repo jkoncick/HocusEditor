@@ -181,6 +181,7 @@ type
     OriginalExeOpenDialog: TOpenDialog;
     ExePatchSaveDialog: TSaveDialog;
     ExePatchOpenDialog: TOpenDialog;
+    N2: TMenuItem;
     // Main form events
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -907,7 +908,7 @@ var
   entry_index: integer;
   palette_changed: boolean;
 begin
-  SetDialog.select_menu(5);
+  SetDialog.select_menu(6);
   if SetDialog.ModalResult = mrCancel then
     exit;
   palette_changed := false;
@@ -1169,7 +1170,7 @@ end;
 procedure TMainWindow.About1Click(Sender: TObject);
 begin
   ShowMessage('Hocus Pocus Level Editor'#13#13+
-              'Made by Hisymak (kozten@seznam.cz)'#13'Version 1.1'#13'Date: 2016-08-29'#13#13+
+              'Made by Hisymak (kozten@seznam.cz)'#13'Version 1.2'#13'Date: 2016-11-12'#13#13+
               'Game version: '+ Archive.archive_version +#13#13+
               'Special thanks to:'#13'Malvineous, Spinal, K1n9 Duk3 and MainMemory'#13'for reverse-engineering the Hocus Pocus map format'#13'and providing the information on Modding Wiki.'#13'http://www.shikadi.net/moddingwiki/Hocus_Pocus');
 end;

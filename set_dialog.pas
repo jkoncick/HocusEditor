@@ -126,9 +126,15 @@ begin
           TilesetSelection_List.SetFocus;
         end;
     5:  begin
-          Height := 480;
+          Height := 500;
           FileSelection_Menu.Visible := True;
-          Caption := 'Select a file';
+          Caption := 'Select a file to export';
+          FileSelection_List.SetFocus;
+        end;
+    6:  begin
+          Height := 500;
+          FileSelection_Menu.Visible := True;
+          Caption := 'Select a file to import';
           FileSelection_List.SetFocus;
         end;
   end;
@@ -180,6 +186,9 @@ begin
           ModalResult := mrOk;
         end;
     5:  begin
+          ModalResult := mrOk;
+        end;
+    6:  begin
           ModalResult := mrOk;
         end;
   end;

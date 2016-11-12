@@ -1,6 +1,6 @@
 Hocus Pocus level editor
 ------------------------
-Version 1.1 (2016-08-29)
+Version 1.2 (2016-11-12)
 Made by Hisymak (kozten@seznam.cz)
 Source available at https://github.com/jkoncick/HocusEditor
 
@@ -17,7 +17,7 @@ Source available at https://github.com/jkoncick/HocusEditor
    - How to easily draw borders around "windows" in background layer
    - How to use new monster types in a level
    - How the animated tiles work
-   - How to replace graphics, music and sound with your own
+   - How to replace graphics, music, sounds and texts with your own
    - How to distribute your mod as a patch
 
 
@@ -45,6 +45,16 @@ New from 1.1:
 - Export and import any file from/to HOCUS.DAT (graphics, music, sounds...)
 - Edit level properties stored inside HOCUS.EXE (par times, elevator tiles, music...)
 - Apply mod patch feature (easy distribution of your mods)
+- Created document "Graphics replacement guide"
+New from 1.2:
+- Created tool for viewing, exporting and importing sprites
+- Created tool for viewing, exporting and importing menu and UI graphics
+- The document "Graphics replacement guide" was updated accordingly
+- Sprites are drawn on map (can be turned on and off)
+- The "Save map image" now saves into .png instead of extremely huge .bmp file
+- Added exe patching feature
+- Added support for beta version
+- Added "Compute VRAM usage" function
 
 
 2. Installation
@@ -54,7 +64,7 @@ New from 1.1:
   time. There you can adjust some preferences and set path for Dosbox 
   (must include dosbox.exe filename).
 - The editor detects your game version by HOCUS.EXE filesize.
-  Supported versions are shareware (both 1.0 and 1.1) and registered (only 1.1).
+  Supported versions are shareware (both 1.0 and 1.1), registered (only 1.1) and beta.
 
 
 3. Modding tips
@@ -194,13 +204,13 @@ How to use new monster types in a level
 ---------------------------------------
 Go to "Level properties" window, "Monster settings" section. There is list of monster
 types which can be used in a level. Up to 10 monster types can be used in a level, 
-but usually no more than three or four are actually used.
-To add a new monster type, select a next free slot, choose a sprite set and then 
+but usually no more than three or four are used in the original levels.
+To add a new monster type, select the next free slot, choose a sprite set and then 
 configure all monster properties (usually you would copy the properties from a 
 different level where that monster type is used).
 Note: Due to static limitation of the amount of memory to hold graphical sprite data, 
-you cannot add many monster types into a level (it also depends on the size of tileset,
-read more here: http://www.shikadi.net/moddingwiki/Hocus_Pocus/ModdingHelp).
+you cannot add many monster types into a level (it also depends on the size of tileset).
+Read more details in Hocus Pocus graphics replacement guide.
 If you see graphical glitches in the sprites of the "highest" monster types, you
 reached the limit and must remove some monster types.
 
@@ -210,29 +220,36 @@ How the animated tiles work
 For each tile in the tileset there is animation information. For most tiles there is 
 no animation, but there can be two types animations: permanent and random animation. 
 Permanent animation is used on lava, spikes and a magic crystal. Random animation is 
-used on treasure, keys and keyholes (and twinkling spikes in polar levels). 
+used on treasure, keys and keyholes (and twinkling icicles in polar levels). 
 Go to "Level properties" window, "animation settings" section.
 For each tile within the animation range you simply set animation type, the first and 
 last tile index of the range (the best is to look at how it is set in existing levels).
 
 
-How to replace graphics, music and sound with your own
-------------------------------------------------------
+How to replace graphics, music, sounds and texts with your own
+--------------------------------------------------------------
 You can export and import any file from/to the game archive (HOCUS.DAT). The editor
-exports and imports raw data, that means, you must import your own files in the game's
+exports and imports raw data, that means, you must import files which are in the game's
 native format.
 The game uses MID format for music, so replacing music is really easy. But remember
 that file size is limited to 32kB. If you import a bigger file, it will rewrite some
 memory which will result in broken font. Also remember that Adlib/Sound Blaster music
 uses OPL chip which can play up to 9 notes at once, so if your midi is too much
-polyphonic it will result in lost notes.
-The game uses PCX format for tilesets and backdrops. There are many image editors that
-can save into this format, but you will run into problems with palettes.
-There exists a whole document called "Hocus Pocus graphics replacement guide" where
-everything is described in detail. Some useful information can also be found here:
-http://www.shikadi.net/moddingwiki/Hocus_Pocus/ModdingHelp
-The sprites are stored in the game-specific format and currently there is no program
-that can edit Hocus Pocus sprites, untortunately.
+polyphonic it will result in lost notes. 
+The sounds are stored in VOC format which is a known format and there exist tools to 
+play and create sounds in this format.
+PCX format is used for tilesets, backdrops and fullscreen images. There are many image 
+editors that can save into this format, but you will run into problems with palettes. 
+There exists a whole document called "Hocus Pocus graphics replacement guide" where 
+everything is described in detail.
+The sprites are stored in a custom format and HocusEditor contains a built-in tool to
+edit them. The file that contains all sprites is "SPRITES.SPR".
+Texts (story, ordering info) are stored in PAG files. HocusSharp, a modding tool set
+for Hocus Pocus, contains an editor for PAG files called HocusText. In order to 
+edit these text files you need to export them, modify them with HocusText and import
+them back. HocusText requires FONT.MSK for text preview, you need to export it too.
+Other text strings are hard-coded into HOCUS.EXE. You can create exe patch to store 
+changes in either text strings or just any data or code in the game executable.
 
 
 How to distribute your mod as a patch
@@ -241,10 +258,11 @@ If you want to distribute your mod, you do not need to post the whole HOCUS.DAT 
 HOCUS.EXE files, but you can post only the changes you made (new levels and new files)
 and let the players apply that changes on their side.
 
-The "patch" you will make will actually be a folder containing three types of files:
+The "patch" you will make will actually be a folder containing these types of files:
 1. Exported levels files in .hpm format (use File - Export map to do this)
 2. Files from HOCUS.DAT that will replace the original files (.mid, .pcx, etc...)
-3. An .ini file containing references to all the above files:
+3. Exe patch file (.pat)
+4. An .ini file containing references to all the above files:
 
 [Levels]
 E1L1=mylevel.hpm
@@ -254,14 +272,18 @@ E1L2=anotherlevel.hpm
 TITLE.MID=mytitlemusic.mid
 TILES01.PCX=mysupertileset.pcx
 
-The example should be easy to understand, on the "key" side there is level number or
-the file name in HOCUS.DAT to be replaced and on the "value" side there is name
-of your file which will replace that level or file.
+[ExePatch]
+patch=hocus.pat
+
+
+The example should be easy to understand, on the "left" side there is level number or
+file name in HOCUS.DAT to be replaced, and on the "right" side there is name of your 
+file which will replace that level or file. There can be up to one exe patch file. 
 You will pack all these files into a zip file which you will distribute.
-The player will download the zip and unpack everything from it into a folder, then he
-will start Hocus Pocus level editor, select "Apply mod patch" option and open the .ini
-file you made. The editor will automatically replace all the game files and your mod
-will be ready to play.
+The end-user will download the zip and unpack everything from it into a folder, then he
+will start HocusEditor, select "Tools -> Apply mod patch" option and select the .ini
+file you made. The editor will automatically replace all the game files, apply exe 
+patch (if one is provided) and your mod will be ready to play.
 Note that this method of patching will let you create a mod that is independent on the
 game version. It will be applicable on either full or demo version, in case you replace
 only the files or levels that are available in all game versions.

@@ -95,7 +95,7 @@ var
 
 implementation
 
-uses Windows, Forms, SysUtils, Math, main, block_preset_dialog, _settings, IniFiles, Classes, Dialogs, _archive, _map;
+uses Windows, Forms, SysUtils, Math, main, block_preset_dialog, _settings, IniFiles, Classes, Dialogs, _archive, _map, pngimage;
 
 procedure TTileset.init;
 begin
@@ -132,10 +132,23 @@ begin
 end;
 
 procedure TTileset.load_custom_image(filename: String);
+var
+  PNG: TPNGObject;
 begin
   current_tileset := -1;
   MainWindow.StatusBar.Panels[2].Text := 'Custom image';
-  tileimage.LoadFromFile(filename);
+  if AnsiCompareText(ExtractFileExt(filename), '.PNG') = 0 then
+  begin
+    PNG := TPngObject.Create;
+    PNG.LoadFromFile(filename);
+    if PNG.Header.ColorType = COLOR_PALETTE then
+      PNG.RemoveTransparency;
+    tileimage.Assign(PNG);
+    PNG.Destroy;
+  end else
+  begin
+    tileimage.LoadFromFile(filename);
+  end;
   tileimage_filename := filename;
   MainWindow.render_tileset;
 end;

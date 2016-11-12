@@ -260,7 +260,7 @@ procedure TSpriteFile.import_sprite(sprite_set, sprite_num: integer; input_image
 var
   input_buffer: array of byte;
   input_buffer_4: array of Cardinal;
-  input_width, input_height: integer;
+  input_width, input_width_2, input_height: integer;
   source_image: TBitmap;
   source_buffer: array[0..63999] of byte;
   source_width, source_height: integer;
@@ -276,19 +276,20 @@ begin
   // Prepare transparency mask
   FillChar(transparency_mask, sizeof(transparency_mask), 0);
   input_width := input_image.Width;
+  input_width_2 := (input_width + 1) and $FFFFFE;
   input_height := input_image.Height;
   source_width := Min(input_width, 320);
   source_height := Min(input_height, 200);
   if input_image.PixelFormat = pf8bit then
   begin
-    SetLength(input_buffer, input_width * input_height);
-    GetBitmapBits(input_image.Handle, input_width * input_height, input_buffer);
+    SetLength(input_buffer, input_width_2 * input_height);
+    GetBitmapBits(input_image.Handle, input_width_2 * input_height, input_buffer);
     if transparent_index = -1 then
       transparent_index := input_buffer[0];
     for y := 0 to source_height - 1 do
       for x := 0 to source_width - 1 do
       begin
-        if input_buffer[y * input_width + x] <> transparent_index then
+        if input_buffer[y * input_width_2 + x] <> transparent_index then
           transparency_mask[y * 320 + x] := 1;
       end;
     SetLength(input_buffer, 0);

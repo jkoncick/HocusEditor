@@ -548,6 +548,13 @@ begin
     // Import file into game archive
     import_file(index, patch_file);
   end;
+  // Patch exe
+  value := ini.ReadString('ExePatch', 'patch', '');
+  if value <> '' then
+  begin
+    patch_file := mod_patch_path + value;
+    ExeFile.apply_exe_patch(patch_file);
+  end;
 end;
 
 end.
